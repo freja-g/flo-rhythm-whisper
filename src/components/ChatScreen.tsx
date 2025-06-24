@@ -27,7 +27,8 @@ const ChatScreen: React.FC = () => {
       timestamp: new Date().toISOString()
     };
 
-    setChatMessages([...chatMessages, userMessage]);
+    const updatedMessages = [...chatMessages, userMessage];
+    setChatMessages(updatedMessages);
     setInputMessage('');
     setIsLoading(true);
 
@@ -40,7 +41,7 @@ const ChatScreen: React.FC = () => {
         timestamp: new Date().toISOString()
       };
 
-      setChatMessages(prev => [...prev, aiResponse]);
+      setChatMessages([...updatedMessages, aiResponse]);
       setIsLoading(false);
     }, 1500);
   };
@@ -75,7 +76,7 @@ const ChatScreen: React.FC = () => {
             ←
           </button>
           <div className="flex-1">
-            <h1 className="text-2xl font-bold text-white">AI Assistant</h1>
+            <h1 className="text-2xl font-bold text-white">AI Chatbot</h1>
             <p className="text-white/90">Your personal health companion</p>
           </div>
           <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
