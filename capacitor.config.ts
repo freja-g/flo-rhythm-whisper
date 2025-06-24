@@ -9,6 +9,9 @@ const config: CapacitorConfig = {
     url: 'https://a03c59a9-9486-4d3c-8698-6bdf628475ab.lovableproject.com?forceHideBadge=true',
     cleartext: true
   },
+  android: {
+    allowMixedContent: true
+  }
 };
 
 export default config;
