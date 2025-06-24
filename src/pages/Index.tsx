@@ -9,6 +9,7 @@ import LogScreen from '../components/LogScreen';
 import TipsScreen from '../components/TipsScreen';
 import ChatScreen from '../components/ChatScreen';
 import ProfileScreen from '../components/ProfileScreen';
+import AdminPanel from '../components/AdminPanel';
 
 const AppContent: React.FC = () => {
   const { currentScreen } = useApp();
@@ -31,6 +32,8 @@ const AppContent: React.FC = () => {
         return <ChatScreen />;
       case 'profile':
         return <ProfileScreen />;
+      case 'admin':
+        return <AdminPanel />;
       default:
         return <SplashScreen />;
     }

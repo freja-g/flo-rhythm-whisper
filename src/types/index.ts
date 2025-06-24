@@ -7,6 +7,7 @@ export interface User {
   cycleLength: number;
   lastPeriodDate: string;
   createdAt: string;
+  isAdmin?: boolean;
 }
 
 export interface Cycle {
@@ -36,6 +37,8 @@ export interface Article {
   category: string;
   readTime: string;
   imageUrl?: string;
+  isPublished?: boolean;
+  createdAt?: string;
 }
 
 export interface ChatMessage {
@@ -43,4 +46,11 @@ export interface ChatMessage {
   message: string;
   isUser: boolean;
   timestamp: string;
+}
+
+export interface AdminStats {
+  totalUsers: number;
+  activeUsers: number;
+  totalArticles: number;
+  totalChatMessages: number;
 }
