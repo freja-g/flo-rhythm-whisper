@@ -1,37 +1,56 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { formatDate } from '../utils/dateUtils';
 
 const ProfileScreen: React.FC = () => {
   const { user, setUser, setCurrentScreen } = useApp();
+  const [showGoalsModal, setShowGoalsModal] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [showHealthReports, setShowHealthReports] = useState(false);
 
   if (!user) return null;
 
-  const profileOptions = [
-    { title: 'Go Premium', icon: '⭐', color: 'text-yellow-600' },
-    { title: 'My Goals', icon: '🎯', color: 'text-blue-600' },
-    { title: 'Subscription', icon: '💳', color: 'text-green-600' },
-    { title: 'Health Reports', icon: '📊', color: 'text-purple-600' },
-    { title: 'Terms & Conditions', icon: '📄', color: 'text-gray-600' },
-    { title: 'Delete Profile', icon: '🗑️', color: 'text-red-600' }
-  ];
-
   const handleDeleteProfile = () => {
     if (confirm('Are you sure you want to delete your profile? This action cannot be undone.')) {
+      // Clear all data from localStorage
+      localStorage.removeItem('user');
+      localStorage.removeItem('symptoms');
+      localStorage.removeItem('chatMessages');
+      localStorage.removeItem('currentScreen');
       setUser(null);
       setCurrentScreen('splash');
     }
   };
 
-  const handleOptionClick = (title: string) => {
-    if (title === 'Delete Profile') {
-      handleDeleteProfile();
-    } else {
-      // Handle other options
-      console.log(`Clicked: ${title}`);
-    }
+  const handleGoPremium = () => {
+    alert('Premium features coming soon! You\'ll get access to advanced tracking, personalized insights, and priority support.');
   };
+
+  const handleMyGoals = () => {
+    setShowGoalsModal(true);
+  };
+
+  const handleSubscription = () => {
+    alert('Subscription management coming soon! You\'ll be able to manage your billing and subscription preferences here.');
+  };
+
+  const handleHealthReports = () => {
+    setShowHealthReports(true);
+  };
+
+  const handleTermsAndConditions = () => {
+    setShowTermsModal(true);
+  };
+
+  const profileOptions = [
+    { title: 'Go Premium', icon: '⭐', color: 'text-yellow-600', action: handleGoPremium },
+    { title: 'My Goals', icon: '🎯', color: 'text-blue-600', action: handleMyGoals },
+    { title: 'Subscription', icon: '💳', color: 'text-green-600', action: handleSubscription },
+    { title: 'Health Reports', icon: '📊', color: 'text-purple-600', action: handleHealthReports },
+    { title: 'Terms & Conditions', icon: '📄', color: 'text-gray-600', action: handleTermsAndConditions },
+    { title: 'Delete Profile', icon: '🗑️', color: 'text-red-600', action: handleDeleteProfile }
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50">
@@ -87,7 +106,7 @@ const ProfileScreen: React.FC = () => {
           {profileOptions.map((option, index) => (
             <button
               key={option.title}
-              onClick={() => handleOptionClick(option.title)}
+              onClick={option.action}
               className={`w-full p-4 flex items-center space-x-4 hover:bg-gray-50 transition-colors ${
                 index !== profileOptions.length - 1 ? 'border-b border-gray-100' : ''
               }`}
@@ -107,6 +126,97 @@ const ProfileScreen: React.FC = () => {
           <p>Your personal menstrual health companion</p>
         </div>
       </div>
+
+      {/* Goals Modal */}
+      {showGoalsModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full">
+            <h3 className="text-xl font-bold mb-4">My Goals</h3>
+            <div className="space-y-3">
+              <div className="p-3 bg-pink-50 rounded-lg">
+                <h4 className="font-medium text-pink-800">Track Cycle Regularly</h4>
+                <p className="text-sm text-pink-600">Log symptoms and moods daily</p>
+              </div>
+              <div className="p-3 bg-blue-50 rounded-lg">
+                <h4 className="font-medium text-blue-800">Understand Patterns</h4>
+                <p className="text-sm text-blue-600">Identify cycle patterns and symptoms</p>
+              </div>
+              <div className="p-3 bg-green-50 rounded-lg">
+                <h4 className="font-medium text-green-800">Improve Wellness</h4>
+                <p className="text-sm text-green-600">Use insights for better health</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowGoalsModal(false)}
+              className="mt-4 w-full bg-pink-500 text-white py-2 rounded-lg hover:bg-pink-600 transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Health Reports Modal */}
+      {showHealthReports && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full">
+            <h3 className="text-xl font-bold mb-4">Health Reports</h3>
+            <div className="space-y-4">
+              <div className="text-center py-8">
+                <span className="text-6xl">📊</span>
+                <h4 className="text-lg font-medium mt-4">No Reports Yet</h4>
+                <p className="text-gray-600 text-sm">Keep tracking your cycle to generate personalized health reports</p>
+              </div>
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h5 className="font-medium mb-2">Available Reports:</h5>
+                <ul className="text-sm text-gray-600 space-y-1">
+                  <li>• Cycle Pattern Analysis</li>
+                  <li>• Symptom Trends</li>
+                  <li>• Mood Tracking Summary</li>
+                  <li>• Health Insights</li>
+                </ul>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowHealthReports(false)}
+              className="mt-4 w-full bg-purple-500 text-white py-2 rounded-lg hover:bg-purple-600 transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Terms Modal */}
+      {showTermsModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-96 overflow-y-auto">
+            <h3 className="text-xl font-bold mb-4">Terms & Conditions</h3>
+            <div className="text-sm text-gray-700 space-y-3">
+              <p><strong>1. Acceptance of Terms</strong></p>
+              <p>By using FloMentor, you agree to these terms and conditions.</p>
+              
+              <p><strong>2. Privacy</strong></p>
+              <p>Your health data is stored locally on your device and is not shared with third parties.</p>
+              
+              <p><strong>3. Medical Disclaimer</strong></p>
+              <p>FloMentor is for informational purposes only and should not replace professional medical advice.</p>
+              
+              <p><strong>4. Data Accuracy</strong></p>
+              <p>You are responsible for the accuracy of the information you input.</p>
+              
+              <p><strong>5. Updates</strong></p>
+              <p>We may update these terms from time to time. Continued use constitutes acceptance.</p>
+            </div>
+            <button
+              onClick={() => setShowTermsModal(false)}
+              className="mt-4 w-full bg-gray-500 text-white py-2 rounded-lg hover:bg-gray-600 transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Bottom Navigation */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-6 py-4">
