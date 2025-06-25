@@ -38,7 +38,7 @@ const DashboardScreen: React.FC = () => {
   const today = new Date().getDay();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50 pb-24">
       {/* Header */}
       <div className="bg-gradient-to-r from-pink-400 to-purple-400 p-6 pb-8">
         <div className="flex justify-between items-center mb-6">
@@ -87,7 +87,7 @@ const DashboardScreen: React.FC = () => {
       </div>
 
       {/* Quick Actions */}
-      <div className="px-6 space-y-4">
+      <div className="px-6 space-y-4 mb-6">
         <h2 className="text-xl font-bold text-gray-800 mb-4">Quick Access</h2>
         
         {quickActions.map((action, index) => (
