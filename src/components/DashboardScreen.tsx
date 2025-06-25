@@ -35,7 +35,7 @@ const DashboardScreen: React.FC = () => {
     {
       title: 'AI Chatbot',
       subtitle: 'Get personalized advice',
-      icon: '🤖',
+      icon: '👩‍⚕️',
       color: 'from-blue-400 to-cyan-400',
       onClick: () => setCurrentScreen('chat')
     }
@@ -77,11 +77,11 @@ const DashboardScreen: React.FC = () => {
       <div className="px-6 -mt-4">
         <div className="bg-white rounded-2xl p-4 shadow-lg mb-6">
           <div className="flex justify-between items-center">
-            {weekDays.map((day, index) => (
+            {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
               <div
                 key={index}
                 className={`w-10 h-10 rounded-full flex items-center justify-center font-medium ${
-                  index === today
+                  index === new Date().getDay()
                     ? 'bg-gradient-to-r from-pink-400 to-purple-400 text-white'
                     : 'text-gray-500'
                 }`}
@@ -94,7 +94,7 @@ const DashboardScreen: React.FC = () => {
       </div>
 
       {/* Quick Actions */}
-      <div className="px-6 space-y-4 mb-6">
+      <div className="px-6 space-y-4 mb-20">
         <h2 className="text-xl font-bold text-gray-800 mb-4">Quick Access</h2>
         
         {quickActions.map((action, index) => (

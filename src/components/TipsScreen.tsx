@@ -63,11 +63,18 @@ const TipsScreen: React.FC = () => {
             <span className="text-xs text-gray-400">Home</span>
           </button>
           <button 
-            onClick={() => setCurrentScreen('log')}
+            onClick={() => setCurrentScreen('cycles')}
+            className="flex flex-col items-center space-y-1"
+          >
+            <span className="text-gray-400 text-xl">📅</span>
+            <span className="text-xs text-gray-400">Cycles</span>
+          </button>
+          <button 
+            onClick={() => setCurrentScreen('symptoms')}
             className="flex flex-col items-center space-y-1"
           >
             <span className="text-gray-400 text-xl">📝</span>
-            <span className="text-xs text-gray-400">Log</span>
+            <span className="text-xs text-gray-400">Symptoms</span>
           </button>
           <button className="flex flex-col items-center space-y-1">
             <span className="text-purple-500 text-xl">💡</span>

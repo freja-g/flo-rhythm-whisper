@@ -40,6 +40,33 @@ const CyclesScreen: React.FC = () => {
     return 'Not available';
   };
 
+  // Generate past cycles data based on current cycle info
+  const generatePastCycles = () => {
+    if (!user.lastPeriodDate) return [];
+    
+    const cycles = [];
+    const currentDate = new Date(user.lastPeriodDate);
+    
+    // Generate last 6 cycles for display
+    for (let i = 0; i < 6; i++) {
+      const cycleStart = new Date(currentDate.getTime() - (i * user.cycleLength * 24 * 60 * 60 * 1000));
+      const cycleEnd = new Date(cycleStart.getTime() + (user.periodLength * 24 * 60 * 60 * 1000));
+      
+      cycles.push({
+        id: `cycle-${i}`,
+        startDate: cycleStart.toISOString().split('T')[0],
+        endDate: cycleEnd.toISOString().split('T')[0],
+        cycleLength: user.cycleLength,
+        periodLength: user.periodLength,
+        status: i === 0 ? 'Current' : 'Completed'
+      });
+    }
+    
+    return cycles;
+  };
+
+  const pastCycles = generatePastCycles();
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50">
       {/* Header */}
@@ -82,9 +109,49 @@ const CyclesScreen: React.FC = () => {
           </div>
         </div>
 
+        {/* Past Cycles History */}
+        {pastCycles.length > 0 && (
+          <div className="bg-white rounded-2xl p-6 shadow-lg">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">Cycle History</h3>
+            <div className="space-y-4">
+              {pastCycles.map((cycle, index) => (
+                <div key={cycle.id} className="border-l-4 border-pink-400 pl-4 py-3 bg-pink-50 rounded-r-lg">
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <h4 className="font-medium text-gray-800">
+                        {index === 0 ? 'Current Cycle' : `Cycle ${index + 1}`}
+                      </h4>
+                      <p className="text-sm text-gray-600">
+                        {formatDate(cycle.startDate)} - {formatDate(cycle.endDate)}
+                      </p>
+                    </div>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      cycle.status === 'Current' 
+                        ? 'bg-purple-100 text-purple-800' 
+                        : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {cycle.status}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-gray-500">Cycle Length:</span>
+                      <span className="ml-1 font-medium">{cycle.cycleLength} days</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Period Length:</span>
+                      <span className="ml-1 font-medium">{cycle.periodLength} days</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Add New Cycle */}
         <div className="bg-white rounded-2xl p-6 shadow-lg">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Add Cycle Details</h3>
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">Update Cycle Details</h3>
           
           <div className="space-y-4">
             <div>

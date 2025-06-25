@@ -80,7 +80,7 @@ const ChatScreen: React.FC = () => {
             <p className="text-white/90">Your personal health companion</p>
           </div>
           <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-            <span className="text-white text-lg">🤖</span>
+            <span className="text-white text-lg">👩‍⚕️</span>
           </div>
         </div>
       </div>
