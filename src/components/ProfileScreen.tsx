@@ -23,16 +23,12 @@ const ProfileScreen: React.FC = () => {
     }
   };
 
-  const handleGoPremium = () => {
-    alert('Premium features coming soon! You\'ll get access to advanced tracking, personalized insights, and priority support.');
-  };
-
   const handleMyGoals = () => {
     setShowGoalsModal(true);
   };
 
   const handleSubscription = () => {
-    alert('Subscription management coming soon! You\'ll be able to manage your billing and subscription preferences here.');
+    alert('Choose your payment method:\n\n• M-pesa: Send to 254-XXX-XXXX\n• Credit Card: Coming soon\n• Bank Transfer: Coming soon\n\nContact support for assistance with subscription management.');
   };
 
   const handleHealthReports = () => {
@@ -44,7 +40,6 @@ const ProfileScreen: React.FC = () => {
   };
 
   const profileOptions = [
-    { title: 'Go Premium', icon: '⭐', color: 'text-yellow-600', action: handleGoPremium },
     { title: 'My Goals', icon: '🎯', color: 'text-blue-600', action: handleMyGoals },
     { title: 'Subscription', icon: '💳', color: 'text-green-600', action: handleSubscription },
     { title: 'Health Reports', icon: '📊', color: 'text-purple-600', action: handleHealthReports },
@@ -229,11 +224,18 @@ const ProfileScreen: React.FC = () => {
             <span className="text-xs text-gray-400">Home</span>
           </button>
           <button 
-            onClick={() => setCurrentScreen('log')}
+            onClick={() => setCurrentScreen('cycles')}
+            className="flex flex-col items-center space-y-1"
+          >
+            <span className="text-gray-400 text-xl">📅</span>
+            <span className="text-xs text-gray-400">Cycles</span>
+          </button>
+          <button 
+            onClick={() => setCurrentScreen('symptoms')}
             className="flex flex-col items-center space-y-1"
           >
             <span className="text-gray-400 text-xl">📝</span>
-            <span className="text-xs text-gray-400">Log</span>
+            <span className="text-xs text-gray-400">Symptoms</span>
           </button>
           <button 
             onClick={() => setCurrentScreen('tips')}

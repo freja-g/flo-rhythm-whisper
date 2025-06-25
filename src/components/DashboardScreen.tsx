@@ -12,6 +12,13 @@ const DashboardScreen: React.FC = () => {
   
   const quickActions = [
     {
+      title: 'Add Cycle Details',
+      subtitle: 'Track your cycle information',
+      icon: '📅',
+      color: 'from-pink-500 to-rose-500',
+      onClick: () => setCurrentScreen('cycles')
+    },
+    {
       title: 'Log Symptoms',
       subtitle: 'Track your daily symptoms',
       icon: '📝',
@@ -120,11 +127,18 @@ const DashboardScreen: React.FC = () => {
             <span className="text-xs text-purple-500 font-medium">Home</span>
           </button>
           <button 
-            onClick={() => setCurrentScreen('log')}
+            onClick={() => setCurrentScreen('cycles')}
+            className="flex flex-col items-center space-y-1"
+          >
+            <span className="text-gray-400 text-xl">📅</span>
+            <span className="text-xs text-gray-400">Cycles</span>
+          </button>
+          <button 
+            onClick={() => setCurrentScreen('symptoms')}
             className="flex flex-col items-center space-y-1"
           >
             <span className="text-gray-400 text-xl">📝</span>
-            <span className="text-xs text-gray-400">Log</span>
+            <span className="text-xs text-gray-400">Symptoms</span>
           </button>
           <button 
             onClick={() => setCurrentScreen('tips')}

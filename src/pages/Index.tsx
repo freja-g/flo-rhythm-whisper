@@ -6,6 +6,8 @@ import SignUpScreen from '../components/SignUpScreen';
 import CycleSetupScreen from '../components/CycleSetupScreen';
 import DashboardScreen from '../components/DashboardScreen';
 import LogScreen from '../components/LogScreen';
+import CyclesScreen from '../components/CyclesScreen';
+import SymptomsScreen from '../components/SymptomsScreen';
 import TipsScreen from '../components/TipsScreen';
 import ChatScreen from '../components/ChatScreen';
 import ProfileScreen from '../components/ProfileScreen';
@@ -25,6 +27,10 @@ const AppContent: React.FC = () => {
         return <DashboardScreen />;
       case 'log':
         return <LogScreen />;
+      case 'cycles':
+        return <CyclesScreen />;
+      case 'symptoms':
+        return <SymptomsScreen />;
       case 'tips':
         return <TipsScreen />;  
       case 'chat':
