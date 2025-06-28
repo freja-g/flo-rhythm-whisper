@@ -88,18 +88,18 @@ const CycleSetupScreen: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50">
       {/* Header */}
-      <div className="bg-gradient-to-r from-pink-400 to-purple-400 p-4 sm:p-6 text-center">
-        <h1 className="text-xl sm:text-2xl font-bold text-white">Welcome, {userProfile.name}!</h1>
-        <p className="text-white/90 mt-1 text-sm sm:text-base">Let's personalize your experience</p>
+      <div className="bg-gradient-to-r from-pink-400 to-purple-400 p-4 sm:p-6 lg:p-8 text-center">
+        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white">Welcome, {userProfile.name}!</h1>
+        <p className="text-white/90 mt-1 text-sm sm:text-base lg:text-lg">Let's personalize your experience</p>
       </div>
 
       {/* Form */}
-      <div className="p-4 sm:p-6">
-        <div className="max-w-md mx-auto space-y-4 sm:space-y-6">
-          <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg">
+      <div className="p-4 sm:p-6 lg:p-8">
+        <div className="max-w-sm sm:max-w-md lg:max-w-lg mx-auto space-y-4 sm:space-y-6">
+          <div className="bg-white rounded-2xl p-4 sm:p-6 lg:p-8 shadow-lg">
             <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
               <div>
-                <label className="block text-gray-700 font-medium mb-3 text-sm sm:text-base">
+                <label className="block text-gray-700 font-medium mb-3 text-sm sm:text-base lg:text-lg">
                   Period Length (days)
                 </label>
                 <div className="flex items-center space-x-4">
@@ -111,14 +111,14 @@ const CycleSetupScreen: React.FC = () => {
                     onChange={(e) => setSetupData({...setupData, periodLength: parseInt(e.target.value)})}
                     className="flex-1"
                   />
-                  <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full font-medium text-sm">
+                  <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full font-medium text-sm sm:text-base">
                     {setupData.periodLength} days
                   </span>
                 </div>
               </div>
 
               <div>
-                <label className="block text-gray-700 font-medium mb-3 text-sm sm:text-base">
+                <label className="block text-gray-700 font-medium mb-3 text-sm sm:text-base lg:text-lg">
                   Cycle Length (days)
                 </label>
                 <div className="flex items-center space-x-4">
@@ -130,21 +130,21 @@ const CycleSetupScreen: React.FC = () => {
                     onChange={(e) => setSetupData({...setupData, cycleLength: parseInt(e.target.value)})}
                     className="flex-1"
                   />
-                  <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full font-medium text-sm">
+                  <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full font-medium text-sm sm:text-base">
                     {setupData.cycleLength} days
                   </span>
                 </div>
               </div>
 
               <div>
-                <label className="block text-gray-700 font-medium mb-3 text-sm sm:text-base">
+                <label className="block text-gray-700 font-medium mb-3 text-sm sm:text-base lg:text-lg">
                   Start Date of Last Period
                 </label>
                 <input
                   type="date"
                   value={setupData.lastPeriodDate}
                   onChange={(e) => setSetupData({...setupData, lastPeriodDate: e.target.value})}
-                  className="w-full p-3 sm:p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-transparent text-sm sm:text-base"
+                  className="w-full p-3 sm:p-4 lg:p-5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-transparent text-sm sm:text-base lg:text-lg"
                   required
                 />
               </div>
@@ -152,7 +152,7 @@ const CycleSetupScreen: React.FC = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-pink-400 to-purple-400 text-white font-semibold py-3 sm:py-4 rounded-xl hover:shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:transform-none text-sm sm:text-base"
+                className="w-full bg-gradient-to-r from-pink-400 to-purple-400 text-white font-semibold py-3 sm:py-4 lg:py-5 rounded-xl hover:shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:transform-none text-sm sm:text-base lg:text-lg"
               >
                 {loading ? 'Setting up...' : 'Complete Setup'}
               </button>

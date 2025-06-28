@@ -1,7 +1,6 @@
 
 import React, { createContext, useContext, ReactNode, useEffect, useState } from 'react';
 import { User, Symptom, ChatMessage } from '../types';
-import { useLocalStorage } from '../hooks/useLocalStorage';
 import { supabase } from '../lib/supabase';
 
 interface AppContextType {
@@ -31,10 +30,10 @@ interface AppProviderProps {
 }
 
 export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
-  const [user, setUser] = useLocalStorage<User | null>('user', null);
-  const [symptoms, setSymptoms] = useLocalStorage<Symptom[]>('symptoms', []);
-  const [chatMessages, setChatMessages] = useLocalStorage<ChatMessage[]>('chatMessages', []);
-  const [currentScreen, setCurrentScreen] = useLocalStorage<string>('currentScreen', 'splash');
+  const [user, setUser] = useState<User | null>(null);
+  const [symptoms, setSymptoms] = useState<Symptom[]>([]);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [currentScreen, setCurrentScreen] = useState<string>('splash');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -85,7 +84,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     });
 
     return () => subscription.unsubscribe();
-  }, [setUser, setCurrentScreen]);
+  }, []);
 
   return (
     <AppContext.Provider value={{

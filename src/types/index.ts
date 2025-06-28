@@ -29,6 +29,14 @@ export interface Symptom {
   createdAt: string;
 }
 
+export interface Goal {
+  id: string;
+  userId: string;
+  title: string;
+  description: string;
+  createdAt: string;
+}
+
 export interface Article {
   id: string;
   title: string;
