@@ -1,6 +1,6 @@
-
 import React from 'react';
 import { AppProvider, useApp } from '../context/AppContext';
+import NetworkStatus from '../components/NetworkStatus';
 import SplashScreen from '../components/SplashScreen';
 import SignUpScreen from '../components/SignUpScreen';
 import CycleSetupScreen from '../components/CycleSetupScreen';
@@ -55,6 +55,7 @@ const AppContent: React.FC = () => {
 
   return (
     <div className="w-full">
+      <NetworkStatus />
       {renderScreen()}
     </div>
   );
