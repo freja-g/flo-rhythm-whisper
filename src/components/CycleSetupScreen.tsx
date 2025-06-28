@@ -1,61 +1,105 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
+import { supabase } from '../lib/supabase';
 import { User } from '../types';
 
 const CycleSetupScreen: React.FC = () => {
   const { setUser, setCurrentScreen } = useApp();
+  const [loading, setLoading] = useState(false);
+  const [userProfile, setUserProfile] = useState<any>(null);
   const [setupData, setSetupData] = useState({
-    name: '',
     periodLength: 5,
     cycleLength: 28,
     lastPeriodDate: ''
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    const newUser: User = {
-      id: Date.now().toString(),
-      name: setupData.name,
-      email: 'user@example.com', // Would come from signup
-      periodLength: setupData.periodLength,
-      cycleLength: setupData.cycleLength,
-      lastPeriodDate: setupData.lastPeriodDate,
-      createdAt: new Date().toISOString()
-    };
-    
-    setUser(newUser);
-    setCurrentScreen('dashboard');
+  useEffect(() => {
+    fetchUserProfile();
+  }, []);
+
+  const fetchUserProfile = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+        
+        setUserProfile(profile);
+      }
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+    }
   };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user && userProfile) {
+        // Update profile with cycle data
+        const { error } = await supabase
+          .from('profiles')
+          .update({
+            period_length: setupData.periodLength,
+            cycle_length: setupData.cycleLength,
+            last_period_date: setupData.lastPeriodDate
+          })
+          .eq('id', user.id);
+
+        if (error) throw error;
+
+        const newUser: User = {
+          id: user.id,
+          name: userProfile.name,
+          email: userProfile.email,
+          periodLength: setupData.periodLength,
+          cycleLength: setupData.cycleLength,
+          lastPeriodDate: setupData.lastPeriodDate,
+          createdAt: userProfile.created_at
+        };
+        
+        setUser(newUser);
+        setCurrentScreen('dashboard');
+      }
+    } catch (error: any) {
+      alert(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!userProfile) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-400 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50">
       {/* Header */}
-      <div className="bg-gradient-to-r from-pink-400 to-purple-400 p-6 text-center">
-        <h1 className="text-2xl font-bold text-white">Cycle Setup</h1>
-        <p className="text-white/90 mt-1">Let's personalize your experience</p>
+      <div className="bg-gradient-to-r from-pink-400 to-purple-400 p-4 sm:p-6 text-center">
+        <h1 className="text-xl sm:text-2xl font-bold text-white">Welcome, {userProfile.name}!</h1>
+        <p className="text-white/90 mt-1 text-sm sm:text-base">Let's personalize your experience</p>
       </div>
 
       {/* Form */}
-      <div className="p-6">
-        <div className="max-w-md mx-auto space-y-6">
-          <div className="bg-white rounded-2xl p-6 shadow-lg">
-            <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="p-4 sm:p-6">
+        <div className="max-w-md mx-auto space-y-4 sm:space-y-6">
+          <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
               <div>
-                <label className="block text-gray-700 font-medium mb-3">Your Name</label>
-                <input
-                  type="text"
-                  value={setupData.name}
-                  onChange={(e) => setSetupData({...setupData, name: e.target.value})}
-                  className="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-transparent"
-                  placeholder="Enter your name"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-gray-700 font-medium mb-3">
+                <label className="block text-gray-700 font-medium mb-3 text-sm sm:text-base">
                   Period Length (days)
                 </label>
                 <div className="flex items-center space-x-4">
@@ -67,14 +111,14 @@ const CycleSetupScreen: React.FC = () => {
                     onChange={(e) => setSetupData({...setupData, periodLength: parseInt(e.target.value)})}
                     className="flex-1"
                   />
-                  <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full font-medium">
+                  <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full font-medium text-sm">
                     {setupData.periodLength} days
                   </span>
                 </div>
               </div>
 
               <div>
-                <label className="block text-gray-700 font-medium mb-3">
+                <label className="block text-gray-700 font-medium mb-3 text-sm sm:text-base">
                   Cycle Length (days)
                 </label>
                 <div className="flex items-center space-x-4">
@@ -86,30 +130,31 @@ const CycleSetupScreen: React.FC = () => {
                     onChange={(e) => setSetupData({...setupData, cycleLength: parseInt(e.target.value)})}
                     className="flex-1"
                   />
-                  <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full font-medium">
+                  <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full font-medium text-sm">
                     {setupData.cycleLength} days
                   </span>
                 </div>
               </div>
 
               <div>
-                <label className="block text-gray-700 font-medium mb-3">
+                <label className="block text-gray-700 font-medium mb-3 text-sm sm:text-base">
                   Start Date of Last Period
                 </label>
                 <input
                   type="date"
                   value={setupData.lastPeriodDate}
                   onChange={(e) => setSetupData({...setupData, lastPeriodDate: e.target.value})}
-                  className="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-transparent"
+                  className="w-full p-3 sm:p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-transparent text-sm sm:text-base"
                   required
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full bg-gradient-to-r from-pink-400 to-purple-400 text-white font-semibold py-4 rounded-xl hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+                disabled={loading}
+                className="w-full bg-gradient-to-r from-pink-400 to-purple-400 text-white font-semibold py-3 sm:py-4 rounded-xl hover:shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:transform-none text-sm sm:text-base"
               >
-                Complete Setup
+                {loading ? 'Setting up...' : 'Complete Setup'}
               </button>
             </form>
           </div>

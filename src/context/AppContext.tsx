@@ -1,7 +1,8 @@
 
-import React, { createContext, useContext, ReactNode } from 'react';
+import React, { createContext, useContext, ReactNode, useEffect, useState } from 'react';
 import { User, Symptom, ChatMessage } from '../types';
 import { useLocalStorage } from '../hooks/useLocalStorage';
+import { supabase } from '../lib/supabase';
 
 interface AppContextType {
   user: User | null;
@@ -12,6 +13,7 @@ interface AppContextType {
   setChatMessages: (messages: ChatMessage[]) => void;
   currentScreen: string;
   setCurrentScreen: (screen: string) => void;
+  loading: boolean;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -33,6 +35,57 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const [symptoms, setSymptoms] = useLocalStorage<Symptom[]>('symptoms', []);
   const [chatMessages, setChatMessages] = useLocalStorage<ChatMessage[]>('chatMessages', []);
   const [currentScreen, setCurrentScreen] = useLocalStorage<string>('currentScreen', 'splash');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Check if user is already logged in
+    const checkUser = async () => {
+      try {
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        if (authUser) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', authUser.id)
+            .single();
+          
+          if (profile) {
+            const userData: User = {
+              id: profile.id,
+              name: profile.name,
+              email: profile.email,
+              periodLength: profile.period_length || 5,
+              cycleLength: profile.cycle_length || 28,
+              lastPeriodDate: profile.last_period_date || '',
+              createdAt: profile.created_at
+            };
+            setUser(userData);
+            if (profile.period_length && profile.cycle_length) {
+              setCurrentScreen('dashboard');
+            } else {
+              setCurrentScreen('cycleSetup');
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error checking user:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkUser();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_OUT' || !session) {
+        setUser(null);
+        setCurrentScreen('splash');
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [setUser, setCurrentScreen]);
 
   return (
     <AppContext.Provider value={{
@@ -43,7 +96,8 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       chatMessages,
       setChatMessages,
       currentScreen,
-      setCurrentScreen
+      setCurrentScreen,
+      loading
     }}>
       {children}
     </AppContext.Provider>
