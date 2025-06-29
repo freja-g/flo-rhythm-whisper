@@ -1,13 +1,13 @@
 
 import { useState, useEffect } from 'react';
-import { Network, PluginListenerHandle } from '@capacitor/network';
+import { Network } from '@capacitor/network';
 import { Preferences } from '@capacitor/preferences';
 
 export const useOffline = () => {
   const [isOnline, setIsOnline] = useState(true);
 
   useEffect(() => {
-    let networkListener: PluginListenerHandle;
+    let networkListener: any;
 
     const setupNetworkListener = async () => {
       const status = await Network.getStatus();
