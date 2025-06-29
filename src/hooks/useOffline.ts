@@ -1,38 +1,25 @@
 
 import { useState, useEffect } from 'react';
-import { Network } from '@capacitor/network';
-import { Preferences } from '@capacitor/preferences';
 
 export const useOffline = () => {
-  const [isOnline, setIsOnline] = useState(true);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
 
   useEffect(() => {
-    let networkListener: any;
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
 
-    const setupNetworkListener = async () => {
-      const status = await Network.getStatus();
-      setIsOnline(status.connected);
-
-      networkListener = await Network.addListener('networkStatusChange', (status) => {
-        setIsOnline(status.connected);
-      });
-    };
-
-    setupNetworkListener();
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
 
     return () => {
-      if (networkListener) {
-        networkListener.remove();
-      }
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
     };
   }, []);
 
   const saveOfflineData = async (key: string, data: any) => {
     try {
-      await Preferences.set({
-        key: `offline_${key}`,
-        value: JSON.stringify(data)
-      });
+      localStorage.setItem(`offline_${key}`, JSON.stringify(data));
     } catch (error) {
       console.error('Error saving offline data:', error);
     }
@@ -40,8 +27,8 @@ export const useOffline = () => {
 
   const getOfflineData = async (key: string) => {
     try {
-      const result = await Preferences.get({ key: `offline_${key}` });
-      return result.value ? JSON.parse(result.value) : null;
+      const data = localStorage.getItem(`offline_${key}`);
+      return data ? JSON.parse(data) : null;
     } catch (error) {
       console.error('Error getting offline data:', error);
       return null;
@@ -50,7 +37,7 @@ export const useOffline = () => {
 
   const clearOfflineData = async (key: string) => {
     try {
-      await Preferences.remove({ key: `offline_${key}` });
+      localStorage.removeItem(`offline_${key}`);
     } catch (error) {
       console.error('Error clearing offline data:', error);
     }
