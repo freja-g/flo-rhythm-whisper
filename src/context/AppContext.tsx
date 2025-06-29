@@ -39,6 +39,13 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const { isOnline, saveOfflineData, getOfflineData } = useOffline();
 
+  // Save chat messages to offline storage whenever they change
+  useEffect(() => {
+    if (chatMessages.length > 0) {
+      saveOfflineData('chatMessages', chatMessages);
+    }
+  }, [chatMessages, saveOfflineData]);
+
   useEffect(() => {
     // Check if user is already logged in
     const checkUser = async () => {
@@ -79,6 +86,12 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
             setCurrentScreen('dashboard');
           }
         }
+
+        // Load chat messages from offline storage
+        const offlineChatMessages = await getOfflineData('chatMessages');
+        if (offlineChatMessages) {
+          setChatMessages(offlineChatMessages);
+        }
       } catch (error) {
         console.error('Error checking user:', error);
         // Try to load from offline storage on error
@@ -86,6 +99,11 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         if (offlineUser) {
           setUser(offlineUser);
           setCurrentScreen('dashboard');
+        }
+
+        const offlineChatMessages = await getOfflineData('chatMessages');
+        if (offlineChatMessages) {
+          setChatMessages(offlineChatMessages);
         }
       } finally {
         setLoading(false);

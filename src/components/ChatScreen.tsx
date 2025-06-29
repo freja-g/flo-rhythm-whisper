@@ -4,9 +4,11 @@ import { useApp } from '../context/AppContext';
 import { ChatMessage } from '../types';
 
 const ChatScreen: React.FC = () => {
-  const { user, chatMessages, setChatMessages, setCurrentScreen } = useApp();
+  const { user, chatMessages, setChatMessages, setCurrentScreen, isOnline } = useApp();
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [apiKey, setApiKey] = useState('');
+  const [showApiKeyInput, setShowApiKeyInput] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -16,6 +18,23 @@ const ChatScreen: React.FC = () => {
   useEffect(() => {
     scrollToBottom();
   }, [chatMessages]);
+
+  useEffect(() => {
+    // Check if API key is stored in localStorage
+    const storedApiKey = localStorage.getItem('openai_api_key');
+    if (storedApiKey) {
+      setApiKey(storedApiKey);
+    } else {
+      setShowApiKeyInput(true);
+    }
+  }, []);
+
+  const saveApiKey = () => {
+    if (apiKey.trim()) {
+      localStorage.setItem('openai_api_key', apiKey);
+      setShowApiKeyInput(false);
+    }
+  };
 
   const sendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
@@ -32,25 +51,85 @@ const ChatScreen: React.FC = () => {
     setInputMessage('');
     setIsLoading(true);
 
-    // Simulate AI response (in a real app, this would call GPT API)
-    setTimeout(() => {
-      const aiResponse: ChatMessage = {
+    try {
+      let aiResponse: string;
+
+      if (isOnline && apiKey) {
+        // Use ChatGPT API when online
+        aiResponse = await getChatGPTResponse(inputMessage, updatedMessages);
+      } else {
+        // Use offline fallback responses
+        aiResponse = generateOfflineResponse(inputMessage, user);
+      }
+
+      const aiMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
-        message: generateAIResponse(inputMessage, user),
+        message: aiResponse,
         isUser: false,
         timestamp: new Date().toISOString()
       };
 
-      setChatMessages([...updatedMessages, aiResponse]);
+      setChatMessages([...updatedMessages, aiMessage]);
+    } catch (error) {
+      console.error('Error getting AI response:', error);
+      
+      // Fallback to offline response on error
+      const fallbackResponse: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        message: generateOfflineResponse(inputMessage, user),
+        isUser: false,
+        timestamp: new Date().toISOString()
+      };
+
+      setChatMessages([...updatedMessages, fallbackResponse]);
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
-  const generateAIResponse = (message: string, user: any): string => {
+  const getChatGPTResponse = async (message: string, messages: ChatMessage[]): Promise<string> => {
+    const systemPrompt = `You are FloMentor, a helpful AI assistant specialized in menstrual health and wellness. 
+    You provide supportive, accurate, and empathetic advice about periods, symptoms, cycle tracking, and general reproductive health. 
+    Keep responses concise but informative. Always encourage users to consult healthcare providers for serious concerns.
+    
+    User details: ${user ? `Name: ${user.name}, Cycle Length: ${user.cycleLength} days, Period Length: ${user.periodLength} days` : 'No user data available'}`;
+
+    const conversationMessages = [
+      { role: 'system', content: systemPrompt },
+      ...messages.slice(-5).map(msg => ({
+        role: msg.isUser ? 'user' : 'assistant',
+        content: msg.message
+      })),
+      { role: 'user', content: message }
+    ];
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: conversationMessages,
+        max_tokens: 500,
+        temperature: 0.7,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`OpenAI API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.choices[0].message.content;
+  };
+
+  const generateOfflineResponse = (message: string, user: any): string => {
     const lowerMessage = message.toLowerCase();
     
     if (lowerMessage.includes('period') || lowerMessage.includes('menstrual')) {
-      return "Based on your cycle data, your period is coming soon. Make sure to stay hydrated and consider having a heating pad ready for any cramps. Is there anything specific about your period you'd like to know?";
+      return `Based on your cycle data (${user?.cycleLength || 28} day cycle), I can help you track your period. Remember to stay hydrated and consider having a heating pad ready for any cramps. Is there anything specific about your period you'd like to know?`;
     }
     
     if (lowerMessage.includes('pain') || lowerMessage.includes('cramp')) {
@@ -60,12 +139,49 @@ const ChatScreen: React.FC = () => {
     if (lowerMessage.includes('mood') || lowerMessage.includes('emotional')) {
       return "Hormonal changes during your cycle can definitely affect your mood. This is completely normal. Regular exercise, adequate sleep, and stress management techniques can help. Remember to be kind to yourself during this time.";
     }
+
+    if (lowerMessage.includes('symptom')) {
+      return "Common period symptoms include cramps, bloating, mood changes, and fatigue. Tracking these symptoms can help you understand your cycle better. Consider gentle exercise, proper nutrition, and adequate rest to manage symptoms.";
+    }
     
-    return "I'm here to help you with any questions about your menstrual health, symptoms, or general wellness. What would you like to know more about?";
+    return "I'm here to help you with any questions about your menstrual health, symptoms, or general wellness. What would you like to know more about? (Note: I'm currently offline, so responses are limited)";
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50 flex flex-col">
+      {/* API Key Input Modal */}
+      {showApiKeyInput && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-lg font-semibold mb-4">OpenAI API Key Required</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              To use ChatGPT features, please enter your OpenAI API key. The app will work offline with limited responses without it.
+            </p>
+            <input
+              type="password"
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              placeholder="Enter your OpenAI API key"
+              className="w-full p-3 border border-gray-300 rounded-lg mb-4"
+            />
+            <div className="flex space-x-3">
+              <button
+                onClick={saveApiKey}
+                className="flex-1 bg-purple-500 text-white p-2 rounded-lg hover:bg-purple-600"
+              >
+                Save Key
+              </button>
+              <button
+                onClick={() => setShowApiKeyInput(false)}
+                className="flex-1 bg-gray-300 text-gray-700 p-2 rounded-lg hover:bg-gray-400"
+              >
+                Skip
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="bg-gradient-to-r from-pink-400 to-purple-400 p-6">
         <div className="flex items-center space-x-4">
@@ -76,14 +192,33 @@ const ChatScreen: React.FC = () => {
             ←
           </button>
           <div className="flex-1">
-            <h1 className="text-2xl font-bold text-white">AI Chatbot</h1>
-            <p className="text-white/90">Your personal health companion</p>
+            <h1 className="text-2xl font-bold text-white">FloMentor AI</h1>
+            <p className="text-white/90">
+              {isOnline && apiKey ? 'ChatGPT Powered' : 'Offline Mode'} • Your health companion
+            </p>
           </div>
-          <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-            <span className="text-white text-lg">👩‍⚕️</span>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => setShowApiKeyInput(true)}
+              className="text-white/80 hover:text-white text-sm"
+            >
+              ⚙️
+            </button>
+            <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+              <span className="text-white text-lg">🤖</span>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Status Indicator */}
+      {!isOnline && (
+        <div className="bg-yellow-100 border-l-4 border-yellow-500 p-3">
+          <p className="text-yellow-800 text-sm">
+            📱 You're offline - using local responses
+          </p>
+        </div>
+      )}
 
       {/* Chat Messages */}
       <div className="flex-1 p-6 space-y-4 overflow-y-auto">
@@ -91,10 +226,13 @@ const ChatScreen: React.FC = () => {
           <div className="text-center py-8">
             <div className="text-6xl mb-4">🌸</div>
             <h3 className="text-xl font-semibold text-gray-800 mb-2">
-              Hello! How can I help you today?
+              Hello! I'm your FloMentor AI
             </h3>
             <p className="text-gray-600">
-              Ask me anything about your menstrual health, symptoms, or wellness tips.
+              {isOnline && apiKey 
+                ? "I'm powered by ChatGPT and ready to help with your menstrual health questions!"
+                : "I'm in offline mode but can still help with basic menstrual health guidance."
+              }
             </p>
           </div>
         )}
@@ -147,7 +285,7 @@ const ChatScreen: React.FC = () => {
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-            placeholder="Type your message..."
+            placeholder="Ask me about your menstrual health..."
             className="flex-1 p-3 border border-gray-200 rounded-full focus:ring-2 focus:ring-purple-400 focus:border-transparent"
             disabled={isLoading}
           />
