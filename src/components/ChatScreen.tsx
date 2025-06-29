@@ -70,7 +70,7 @@ const ChatScreen: React.FC = () => {
         timestamp: new Date()
       };
 
-      setChatMessages(prev => [...prev, aiMessage]);
+      setChatMessages([...chatMessages, aiMessage]);
     } catch (error) {
       console.error('Error sending message:', error);
       const errorMessage = {
@@ -79,7 +79,7 @@ const ChatScreen: React.FC = () => {
         sender: 'ai' as const,
         timestamp: new Date()
       };
-      setChatMessages(prev => [...prev, errorMessage]);
+      setChatMessages([...chatMessages, errorMessage]);
     } finally {
       setIsLoading(false);
     }
