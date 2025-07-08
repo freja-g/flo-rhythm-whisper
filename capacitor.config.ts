@@ -2,22 +2,9 @@
 import { CapacitorConfig } from '@capacitor/core';
 
 const config: CapacitorConfig = {
-  appId: 'com.flomentor.app',
+  appId: 'app.lovable.a03c59a994864d3c86986bdf628475ab',
   appName: 'FloMentor',
-  webDir: 'dist',
-  server: {
-    androidScheme: 'https'
-  },
-  plugins: {
-    SplashScreen: {
-      launchShowDuration: 2000,
-      backgroundColor: '#f472b6',
-      showSpinner: false
-    },
-    Network: {
-      statusTap: false
-    }
-  }
+  webDir: 'dist'
 };
 
 export default config;
