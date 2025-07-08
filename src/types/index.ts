@@ -9,21 +9,24 @@ export interface User {
   createdAt: string;
 }
 
+export interface Cycle {
+  id: string;
+  userId: string;
+  startDate: string;
+  endDate?: string;
+  length: number;
+  createdAt: string;
+}
+
 export interface Symptom {
   id: string;
   userId: string;
   date: string;
-  type: string;
-  severity: number;
-  notes?: string;
+  mood: string;
+  symptoms: string[];
+  spotting: 'none' | 'light' | 'heavy';
+  menstrualFlow: 'light' | 'medium' | 'heavy' | 'none';
   createdAt: string;
-}
-
-export interface ChatMessage {
-  id: string;
-  text: string;
-  sender: 'user' | 'ai';
-  timestamp: Date;
 }
 
 export interface Article {
@@ -32,5 +35,14 @@ export interface Article {
   content: string;
   category: string;
   readTime: string;
-  imageUrl: string;
+  imageUrl?: string;
+  isPublished?: boolean;
+  createdAt?: string;
+}
+
+export interface ChatMessage {
+  id: string;
+  message: string;
+  isUser: boolean;
+  timestamp: string;
 }
