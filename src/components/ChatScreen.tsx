@@ -3,6 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { ChatMessage } from '../types';
 import { openAIService } from '../services/openai';
+import { useOnlineStatus } from '../hooks/useOnlineStatus';
 import ApiKeyModal from './ApiKeyModal';
 
 const ChatScreen: React.FC = () => {
@@ -11,6 +12,7 @@ const ChatScreen: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
   const [hasApiKey, setHasApiKey] = useState(openAIService.hasApiKey());
+  const isOnline = useOnlineStatus();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -39,7 +41,7 @@ const ChatScreen: React.FC = () => {
     try {
       let responseMessage: string;
       
-      if (hasApiKey) {
+      if (hasApiKey && isOnline) {
         try {
           responseMessage = await openAIService.generateResponse(inputMessage, chatMessages);
         } catch (error) {
@@ -90,10 +92,16 @@ const ChatScreen: React.FC = () => {
           <div className="flex-1">
             <h1 className="text-2xl font-bold text-white">AI Chatbot</h1>
             <p className="text-white/90">
-              {hasApiKey ? 'AI-powered menstrual health assistant' : 'Basic menstrual health companion'}
+              {hasApiKey && isOnline ? 'AI-powered menstrual health assistant' : 
+               hasApiKey && !isOnline ? 'Offline menstrual health companion' :
+               'Basic menstrual health companion'}
             </p>
           </div>
           <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2">
+              <div className={`w-2 h-2 rounded-full ${isOnline ? 'bg-green-400' : 'bg-red-400'}`}></div>
+              <span className="text-white/80 text-xs">{isOnline ? 'Online' : 'Offline'}</span>
+            </div>
             {!hasApiKey && (
               <button
                 onClick={() => setShowApiKeyModal(true)}
@@ -131,6 +139,13 @@ const ChatScreen: React.FC = () => {
                 >
                   Setup OpenAI
                 </button>
+              </div>
+            )}
+            {!isOnline && (
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 text-center">
+                <p className="text-orange-700 text-sm">
+                  📴 You're offline - basic responses available
+                </p>
               </div>
             )}
           </div>
