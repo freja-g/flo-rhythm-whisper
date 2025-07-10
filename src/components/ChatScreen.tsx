@@ -2,11 +2,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { ChatMessage } from '../types';
+import { openAIService } from '../services/openai';
+import ApiKeyModal from './ApiKeyModal';
 
 const ChatScreen: React.FC = () => {
   const { user, chatMessages, setChatMessages, setCurrentScreen } = useApp();
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showApiKeyModal, setShowApiKeyModal] = useState(false);
+  const [hasApiKey, setHasApiKey] = useState(openAIService.hasApiKey());
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -32,36 +36,44 @@ const ChatScreen: React.FC = () => {
     setInputMessage('');
     setIsLoading(true);
 
-    // Simulate AI response (in a real app, this would call GPT API)
-    setTimeout(() => {
+    try {
+      let responseMessage: string;
+      
+      if (hasApiKey) {
+        try {
+          responseMessage = await openAIService.generateResponse(inputMessage, chatMessages);
+        } catch (error) {
+          console.error('OpenAI API failed, using fallback:', error);
+          responseMessage = openAIService.getFallbackResponse(inputMessage);
+        }
+      } else {
+        responseMessage = openAIService.getFallbackResponse(inputMessage);
+      }
+
       const aiResponse: ChatMessage = {
         id: (Date.now() + 1).toString(),
-        message: generateAIResponse(inputMessage, user),
+        message: responseMessage,
         isUser: false,
         timestamp: new Date().toISOString()
       };
 
       setChatMessages([...updatedMessages, aiResponse]);
+    } catch (error) {
+      console.error('Error generating response:', error);
+      const errorResponse: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        message: "I'm sorry, I'm having trouble responding right now. Please try again in a moment.",
+        isUser: false,
+        timestamp: new Date().toISOString()
+      };
+      setChatMessages([...updatedMessages, errorResponse]);
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
-  const generateAIResponse = (message: string, user: any): string => {
-    const lowerMessage = message.toLowerCase();
-    
-    if (lowerMessage.includes('period') || lowerMessage.includes('menstrual')) {
-      return "Based on your cycle data, your period is coming soon. Make sure to stay hydrated and consider having a heating pad ready for any cramps. Is there anything specific about your period you'd like to know?";
-    }
-    
-    if (lowerMessage.includes('pain') || lowerMessage.includes('cramp')) {
-      return "Period pain is common but manageable. Try applying heat to your lower abdomen, gentle exercise like walking, and consider anti-inflammatory medication if needed. If pain is severe, please consult your healthcare provider.";
-    }
-    
-    if (lowerMessage.includes('mood') || lowerMessage.includes('emotional')) {
-      return "Hormonal changes during your cycle can definitely affect your mood. This is completely normal. Regular exercise, adequate sleep, and stress management techniques can help. Remember to be kind to yourself during this time.";
-    }
-    
-    return "I'm here to help you with any questions about your menstrual health, symptoms, or general wellness. What would you like to know more about?";
+  const handleApiKeySet = () => {
+    setHasApiKey(true);
   };
 
   return (
@@ -77,10 +89,22 @@ const ChatScreen: React.FC = () => {
           </button>
           <div className="flex-1">
             <h1 className="text-2xl font-bold text-white">AI Chatbot</h1>
-            <p className="text-white/90">Your personal health companion</p>
+            <p className="text-white/90">
+              {hasApiKey ? 'AI-powered menstrual health assistant' : 'Basic menstrual health companion'}
+            </p>
           </div>
-          <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-            <span className="text-white text-lg">👩‍⚕️</span>
+          <div className="flex items-center space-x-2">
+            {!hasApiKey && (
+              <button
+                onClick={() => setShowApiKeyModal(true)}
+                className="bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-full text-sm transition-colors"
+              >
+                Enable AI
+              </button>
+            )}
+            <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+              <span className="text-white text-lg">👩‍⚕️</span>
+            </div>
           </div>
         </div>
       </div>
@@ -93,9 +117,22 @@ const ChatScreen: React.FC = () => {
             <h3 className="text-xl font-semibold text-gray-800 mb-2">
               Hello! How can I help you today?
             </h3>
-            <p className="text-gray-600">
+            <p className="text-gray-600 mb-3">
               Ask me anything about your menstrual health, symptoms, or wellness tips.
             </p>
+            {!hasApiKey && (
+              <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 text-center">
+                <p className="text-purple-700 text-sm mb-2">
+                  🔮 Enable AI-powered responses for smarter insights!
+                </p>
+                <button
+                  onClick={() => setShowApiKeyModal(true)}
+                  className="bg-purple-500 text-white px-4 py-2 rounded-full text-sm hover:bg-purple-600 transition-colors"
+                >
+                  Setup OpenAI
+                </button>
+              </div>
+            )}
           </div>
         )}
 
@@ -160,6 +197,12 @@ const ChatScreen: React.FC = () => {
           </button>
         </div>
       </div>
+
+      <ApiKeyModal
+        isOpen={showApiKeyModal}
+        onClose={() => setShowApiKeyModal(false)}
+        onApiKeySet={handleApiKeySet}
+      />
     </div>
   );
 };
