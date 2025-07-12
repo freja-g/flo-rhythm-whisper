@@ -4,14 +4,12 @@ import { useApp } from '../context/AppContext';
 import { ChatMessage } from '../types';
 import { openAIService } from '../services/openai';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
-import ApiKeyModal from './ApiKeyModal';
+import { supabase } from '@/integrations/supabase/client';
 
 const ChatScreen: React.FC = () => {
   const { user, chatMessages, setChatMessages, setCurrentScreen } = useApp();
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [showApiKeyModal, setShowApiKeyModal] = useState(false);
-  const [hasApiKey, setHasApiKey] = useState(openAIService.hasApiKey());
   const isOnline = useOnlineStatus();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -41,11 +39,19 @@ const ChatScreen: React.FC = () => {
     try {
       let responseMessage: string;
       
-      if (hasApiKey && isOnline) {
+      if (isOnline) {
         try {
-          responseMessage = await openAIService.generateResponse(inputMessage, chatMessages);
+          const { data, error } = await supabase.functions.invoke('chat-completion', {
+            body: { 
+              message: inputMessage, 
+              conversationHistory: chatMessages 
+            }
+          });
+
+          if (error) throw error;
+          responseMessage = data.response;
         } catch (error) {
-          console.error('OpenAI API failed, using fallback:', error);
+          console.error('Edge Function failed, using fallback:', error);
           responseMessage = openAIService.getFallbackResponse(inputMessage);
         }
       } else {
@@ -74,10 +80,6 @@ const ChatScreen: React.FC = () => {
     }
   };
 
-  const handleApiKeySet = () => {
-    setHasApiKey(true);
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50 flex flex-col">
       {/* Header */}
@@ -92,9 +94,7 @@ const ChatScreen: React.FC = () => {
           <div className="flex-1">
             <h1 className="text-2xl font-bold text-white">AI Chatbot</h1>
             <p className="text-white/90">
-              {hasApiKey && isOnline ? 'AI-powered menstrual health assistant' : 
-               hasApiKey && !isOnline ? 'Offline menstrual health companion' :
-               'Basic menstrual health companion'}
+              {isOnline ? 'AI-powered menstrual health assistant' : 'Offline menstrual health companion'}
             </p>
           </div>
           <div className="flex items-center space-x-2">
@@ -102,14 +102,6 @@ const ChatScreen: React.FC = () => {
               <div className={`w-2 h-2 rounded-full ${isOnline ? 'bg-green-400' : 'bg-red-400'}`}></div>
               <span className="text-white/80 text-xs">{isOnline ? 'Online' : 'Offline'}</span>
             </div>
-            {!hasApiKey && (
-              <button
-                onClick={() => setShowApiKeyModal(true)}
-                className="bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-full text-sm transition-colors"
-              >
-                Enable AI
-              </button>
-            )}
             <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
               <span className="text-white text-lg">👩‍⚕️</span>
             </div>
@@ -128,19 +120,6 @@ const ChatScreen: React.FC = () => {
             <p className="text-gray-600 mb-3">
               Ask me anything about your menstrual health, symptoms, or wellness tips.
             </p>
-            {!hasApiKey && (
-              <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 text-center">
-                <p className="text-purple-700 text-sm mb-2">
-                  🔮 Enable AI-powered responses for smarter insights!
-                </p>
-                <button
-                  onClick={() => setShowApiKeyModal(true)}
-                  className="bg-purple-500 text-white px-4 py-2 rounded-full text-sm hover:bg-purple-600 transition-colors"
-                >
-                  Setup OpenAI
-                </button>
-              </div>
-            )}
             {!isOnline && (
               <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 text-center">
                 <p className="text-orange-700 text-sm">
@@ -212,12 +191,6 @@ const ChatScreen: React.FC = () => {
           </button>
         </div>
       </div>
-
-      <ApiKeyModal
-        isOpen={showApiKeyModal}
-        onClose={() => setShowApiKeyModal(false)}
-        onApiKeySet={handleApiKeySet}
-      />
     </div>
   );
 };
