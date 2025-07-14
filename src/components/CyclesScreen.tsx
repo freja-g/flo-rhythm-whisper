@@ -85,73 +85,95 @@ const CyclesScreen: React.FC = () => {
         </div>
       </div>
 
-      <div className="p-6 space-y-6 pb-24">
-        {/* Current Cycle Info */}
-        <div className="bg-white rounded-2xl p-6 shadow-lg">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Current Cycle Information</h3>
-          <div className="space-y-3">
-            <div className="flex justify-between py-2">
-              <span className="text-gray-600">Last Period Date</span>
-              <span className="font-medium">{formatDate(user.lastPeriodDate)}</span>
-            </div>
-            <div className="flex justify-between py-2">
-              <span className="text-gray-600">Cycle Length</span>
-              <span className="font-medium">{user.cycleLength} days</span>
-            </div>
-            <div className="flex justify-between py-2">
-              <span className="text-gray-600">Period Length</span>
-              <span className="font-medium">{user.periodLength} days</span>
-            </div>
-            <div className="flex justify-between py-2">
-              <span className="text-gray-600">Next Expected Period</span>
-              <span className="font-medium text-purple-600">{calculateNextPeriod()}</span>
-            </div>
+      <div className="p-6 pb-24">
+        {!user.lastPeriodDate ? (
+          <div className="bg-white rounded-2xl p-8 shadow-lg text-center">
+            <div className="text-6xl mb-4">📅</div>
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">No Cycles Yet</h3>
+            <p className="text-gray-600 mb-4">Start tracking your menstrual cycle to see history here</p>
+            <button
+              onClick={() => {
+                const today = new Date().toISOString().split('T')[0];
+                setStartDate(today);
+                document.getElementById('cycle-form')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="bg-gradient-to-r from-pink-400 to-purple-400 text-white px-6 py-3 rounded-lg hover:shadow-lg transition-all"
+            >
+              Start Tracking
+            </button>
           </div>
-        </div>
-
-        {/* Past Cycles History */}
-        {pastCycles.length > 0 && (
-          <div className="bg-white rounded-2xl p-6 shadow-lg">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Cycle History</h3>
-            <div className="space-y-4">
-              {pastCycles.map((cycle, index) => (
-                <div key={cycle.id} className="border-l-4 border-pink-400 pl-4 py-3 bg-pink-50 rounded-r-lg">
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <h4 className="font-medium text-gray-800">
-                        {index === 0 ? 'Current Cycle' : `Cycle ${index + 1}`}
-                      </h4>
-                      <p className="text-sm text-gray-600">
-                        {formatDate(cycle.startDate)} - {formatDate(cycle.endDate)}
-                      </p>
-                    </div>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      cycle.status === 'Current' 
-                        ? 'bg-purple-100 text-purple-800' 
-                        : 'bg-gray-100 text-gray-800'
-                    }`}>
-                      {cycle.status}
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <span className="text-gray-500">Cycle Length:</span>
-                      <span className="ml-1 font-medium">{cycle.cycleLength} days</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-500">Period Length:</span>
-                      <span className="ml-1 font-medium">{cycle.periodLength} days</span>
-                    </div>
-                  </div>
+        ) : (
+          <div className="space-y-6">
+            {/* Current Cycle Info */}
+            <div className="bg-white rounded-2xl p-6 shadow-lg">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Current Cycle Information</h3>
+              <div className="space-y-3">
+                <div className="flex justify-between py-2">
+                  <span className="text-gray-600">Last Period Date</span>
+                  <span className="font-medium">{formatDate(user.lastPeriodDate)}</span>
                 </div>
-              ))}
+                <div className="flex justify-between py-2">
+                  <span className="text-gray-600">Cycle Length</span>
+                  <span className="font-medium">{user.cycleLength} days</span>
+                </div>
+                <div className="flex justify-between py-2">
+                  <span className="text-gray-600">Period Length</span>
+                  <span className="font-medium">{user.periodLength} days</span>
+                </div>
+                <div className="flex justify-between py-2">
+                  <span className="text-gray-600">Next Expected Period</span>
+                  <span className="font-medium text-purple-600">{calculateNextPeriod()}</span>
+                </div>
+              </div>
             </div>
+
+            {/* Past Cycles History */}
+            {pastCycles.length > 0 && (
+              <div className="bg-white rounded-2xl p-6 shadow-lg">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Cycle History</h3>
+                <div className="space-y-4">
+                  {pastCycles.map((cycle, index) => (
+                    <div key={cycle.id} className="border-l-4 border-pink-400 pl-4 py-3 bg-pink-50 rounded-r-lg">
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <h4 className="font-medium text-gray-800">
+                            {index === 0 ? 'Current Cycle' : `Cycle ${index + 1}`}
+                          </h4>
+                          <p className="text-sm text-gray-600">
+                            {formatDate(cycle.startDate)} - {formatDate(cycle.endDate)}
+                          </p>
+                        </div>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          cycle.status === 'Current' 
+                            ? 'bg-purple-100 text-purple-800' 
+                            : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {cycle.status}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <span className="text-gray-500">Cycle Length:</span>
+                          <span className="ml-1 font-medium">{cycle.cycleLength} days</span>
+                        </div>
+                        <div>
+                          <span className="text-gray-500">Period Length:</span>
+                          <span className="ml-1 font-medium">{cycle.periodLength} days</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
         {/* Add New Cycle */}
-        <div className="bg-white rounded-2xl p-6 shadow-lg">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Update Cycle Details</h3>
+        <div id="cycle-form" className="bg-white rounded-2xl p-6 shadow-lg mt-6">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">
+            {!user.lastPeriodDate ? 'Start Tracking Your Cycle' : 'Update Cycle Details'}
+          </h3>
           
           <div className="space-y-4">
             <div>
@@ -210,7 +232,7 @@ const CyclesScreen: React.FC = () => {
               onClick={handleSaveCycle}
               className="w-full bg-gradient-to-r from-pink-400 to-purple-400 text-white font-semibold py-4 rounded-xl hover:shadow-lg transform hover:scale-105 transition-all duration-200"
             >
-              Save Cycle Details
+              {!user.lastPeriodDate ? 'Start Tracking' : 'Save Cycle Details'}
             </button>
           </div>
         </div>
