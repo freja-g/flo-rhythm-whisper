@@ -86,7 +86,7 @@ const CyclesScreen: React.FC = () => {
       </div>
 
       <div className="p-6 pb-24">
-        {!user.lastPeriodDate ? (
+        {pastCycles.length === 0 ? (
           <div className="bg-white rounded-2xl p-8 shadow-lg text-center">
             <div className="text-6xl mb-4">📅</div>
             <h3 className="text-xl font-semibold text-gray-800 mb-2">No Cycles Yet</h3>
