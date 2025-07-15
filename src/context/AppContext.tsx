@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, ReactNode } from 'react';
-import { User, Symptom, ChatMessage } from '../types';
+import { User, Symptom, ChatMessage, Cycle } from '../types';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 
 interface AppContextType {
@@ -8,6 +8,8 @@ interface AppContextType {
   setUser: (user: User | null) => void;
   symptoms: Symptom[];
   setSymptoms: (symptoms: Symptom[]) => void;
+  cycles: Cycle[];
+  setCycles: (cycles: Cycle[]) => void;
   chatMessages: ChatMessage[];
   setChatMessages: (messages: ChatMessage[]) => void;
   currentScreen: string;
@@ -31,6 +33,7 @@ interface AppProviderProps {
 export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const [user, setUser] = useLocalStorage<User | null>('user', null);
   const [symptoms, setSymptoms] = useLocalStorage<Symptom[]>('symptoms', []);
+  const [cycles, setCycles] = useLocalStorage<Cycle[]>('cycles', []);
   const [chatMessages, setChatMessages] = useLocalStorage<ChatMessage[]>('chatMessages', []);
   const [currentScreen, setCurrentScreen] = useLocalStorage<string>('currentScreen', 'splash');
 
@@ -40,6 +43,8 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       setUser,
       symptoms,
       setSymptoms,
+      cycles,
+      setCycles,
       chatMessages,
       setChatMessages,
       currentScreen,
