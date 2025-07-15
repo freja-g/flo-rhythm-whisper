@@ -5,22 +5,29 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { addDays, differenceInDays, format } from 'date-fns';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-
-interface Profile {
-  id: string;
-  name: string;
-  email: string;
-  cycle_length?: number;
-  period_length?: number;
-  last_period_date?: string;
-  profile_photo?: string;
-}
+import { OfflineStorageService } from '../services/offlineStorage';
+import { Profile } from '../types';
 
 const DashboardScreen: React.FC = () => {
   const { user } = useAuth();
   const { setCurrentScreen } = useApp();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const offlineStorage = OfflineStorageService.getInstance();
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -30,6 +37,16 @@ const DashboardScreen: React.FC = () => {
 
   const fetchProfile = async () => {
     try {
+      if (!navigator.onLine) {
+        // Use offline data when offline
+        const offlineData = offlineStorage.getProfile(user?.id || '');
+        if (offlineData) {
+          setProfile(offlineData);
+        }
+        setLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -38,11 +55,23 @@ const DashboardScreen: React.FC = () => {
 
       if (error) {
         console.error('Error fetching profile:', error);
+        // Try to load from offline storage as fallback
+        const offlineData = offlineStorage.getProfile(user?.id || '');
+        if (offlineData) {
+          setProfile(offlineData);
+        }
       } else {
         setProfile(data);
+        // Save to offline storage
+        offlineStorage.saveProfile(data);
       }
     } catch (error) {
       console.error('Error:', error);
+      // Try to load from offline storage as fallback
+      const offlineData = offlineStorage.getProfile(user?.id || '');
+      if (offlineData) {
+        setProfile(offlineData);
+      }
     } finally {
       setLoading(false);
     }
@@ -102,6 +131,15 @@ const DashboardScreen: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50 pb-24">
+      {/* Offline Indicator */}
+      {!isOnline && (
+        <div className="bg-red-500 text-white text-center py-2 px-4">
+          <div className="flex items-center justify-center space-x-2">
+            <span className="text-sm">📱</span>
+            <span className="text-sm font-medium">Offline - Changes will sync when connection returns</span>
+          </div>
+        </div>
+      )}
       {/* Header */}
       <div className="bg-gradient-to-r from-pink-400 to-purple-400 p-6 pb-8">
         <div className="flex justify-between items-center mb-6">

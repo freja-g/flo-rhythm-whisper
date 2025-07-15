@@ -5,10 +5,11 @@ export const articles: Article[] = [
   {
     id: '1',
     title: 'Understanding Your Menstrual Cycle',
+    summary: 'Your menstrual cycle is more than just your period. Learn about the four phases and what happens in your body during each one.',
     content: 'Your menstrual cycle is more than just your period. Learn about the four phases and what happens in your body during each one.',
     category: 'Education',
     readTime: '5 min read',
-    imageUrl: '🔬',
+    image: '🔬',
     fullContent: `The menstrual cycle is a natural and recurring process that prepares your body for potential pregnancy. It spans around 28 days on average, though normal cycles can range from 21-35 days.
 
 **The Four Phases of Your Menstrual Cycle:**
@@ -51,10 +52,11 @@ Understanding these phases can help you better manage your health, predict ferti
   {
     id: '2',
     title: 'Managing Period Pain Naturally',
+    summary: 'Discover natural ways to reduce period pain including heat therapy, gentle exercise, and dietary changes.',
     content: 'Discover natural ways to reduce period pain including heat therapy, gentle exercise, and dietary changes.',
     category: 'Health Tips',
     readTime: '7 min read',
-    imageUrl: '🌿',
+    image: '🌿',
     fullContent: `Period pain (dysmenorrhea) affects up to 90% of menstruating women. While mild discomfort is normal, severe pain shouldn't be ignored. Here are natural methods to find relief:
 
 **Heat Therapy - Your Best Friend**
@@ -101,10 +103,11 @@ Remember: While these natural methods can be very effective, they work best when
   {
     id: '3',
     title: 'PMS vs PMDD: What\'s the Difference?',
+    summary: 'Learn to distinguish between normal PMS symptoms and more severe PMDD that may require medical attention.',
     content: 'Learn to distinguish between normal PMS symptoms and more severe PMDD that may require medical attention.',
     category: 'Health',
     readTime: '6 min read',
-    imageUrl: '🧠',
+    image: '🧠',
     fullContent: `Both PMS and PMDD occur in the luteal phase of the menstrual cycle (the two weeks before menstruation), but they differ significantly in severity and impact on daily life.
 
 **PMS (Premenstrual Syndrome)**
@@ -170,10 +173,11 @@ Remember: Both PMS and PMDD are real medical conditions. You don't have to suffe
   {
     id: '4',
     title: 'Nutrition for a Healthy Cycle',
+    summary: 'Foods that can help regulate your cycle and reduce symptoms. What to eat and what to avoid.',
     content: 'Foods that can help regulate your cycle and reduce symptoms. What to eat and what to avoid.',
     category: 'Nutrition',
     readTime: '8 min read',
-    imageUrl: '🥗',
+    image: '🥗',
     fullContent: `Your diet plays a crucial role in menstrual health. The right foods can help regulate your cycle, reduce symptoms, and support overall well-being.
 
 **Cycle Syncing: Eating for Each Phase**
@@ -272,10 +276,11 @@ Remember: Every woman's body is different. Pay attention to how different foods 
   {
     id: '5',
     title: 'When to See a Doctor About Your Period',
+    summary: 'Warning signs that indicate you should consult with a healthcare professional about your menstrual health.',
     content: 'Warning signs that indicate you should consult with a healthcare professional about your menstrual health.',
     category: 'Health',
     readTime: '5 min read',
-    imageUrl: '👩‍⚕️',
+    image: '👩‍⚕️',
     fullContent: `Your menstrual cycle is often called the "fifth vital sign" because it provides important insights into your overall health. While periods can vary greatly between women, certain symptoms warrant medical attention.
 
 **Seek Immediate Medical Care If You Experience:**

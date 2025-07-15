@@ -52,7 +52,7 @@ const TipsScreen: React.FC = () => {
         {articles.map((article) => (
           <div key={article.id} className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow">
             <div className="flex items-start space-x-4">
-              <div className="text-3xl">{article.imageUrl}</div>
+              <div className="text-3xl">{article.image}</div>
               <div className="flex-1">
                 <div className="flex items-center space-x-2 mb-2">
                   <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs font-medium">
@@ -64,7 +64,7 @@ const TipsScreen: React.FC = () => {
                   {article.title}
                 </h3>
                 <p className="text-gray-600 text-sm leading-relaxed">
-                  {article.content}
+                  {article.summary}
                 </p>
                 
                 {expandedArticle === article.id && article.fullContent && (

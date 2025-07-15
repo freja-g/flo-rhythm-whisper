@@ -1,4 +1,15 @@
 
+export interface Profile {
+  id: string;
+  name: string;
+  email: string;
+  cycle_length?: number;
+  period_length?: number;
+  last_period_date?: string;
+  profile_photo?: string;
+  created_at?: string;
+}
+
 export interface User {
   id: string;
   name: string;
@@ -32,10 +43,11 @@ export interface Symptom {
 export interface Article {
   id: string;
   title: string;
+  summary: string;
   content: string;
   category: string;
   readTime: string;
-  imageUrl?: string;
+  image: string;
   isPublished?: boolean;
   createdAt?: string;
   fullContent?: string;
