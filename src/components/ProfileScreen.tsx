@@ -113,9 +113,6 @@ const ProfileScreen: React.FC = () => {
     setShowGoalsModal(true);
   };
 
-  const handleSubscription = () => {
-    alert('Choose your payment method:\n\n• M-pesa: Send to 254-XXX-XXXX\n• Credit Card: Coming soon\n• Bank Transfer: Coming soon\n\nContact support for assistance with subscription management.');
-  };
 
   const handleHealthReports = () => {
     setShowHealthReports(true);
@@ -127,7 +124,6 @@ const ProfileScreen: React.FC = () => {
 
   const profileOptions = [
     { title: 'My Goals', icon: '🎯', color: 'text-blue-600', action: handleMyGoals },
-    { title: 'Subscription', icon: '💳', color: 'text-green-600', action: handleSubscription },
     { title: 'Health Reports', icon: '📊', color: 'text-purple-600', action: handleHealthReports },
     { title: 'Terms & Conditions', icon: '📄', color: 'text-gray-600', action: handleTermsAndConditions },
     { title: 'Delete Profile', icon: '🗑️', color: 'text-red-600', action: handleDeleteProfile }
