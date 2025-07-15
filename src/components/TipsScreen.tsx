@@ -1,10 +1,33 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { articles } from '../data/articles';
 
 const TipsScreen: React.FC = () => {
   const { setCurrentScreen } = useApp();
+  const [expandedArticle, setExpandedArticle] = useState<string | null>(null);
+
+  const toggleArticle = (articleId: string) => {
+    setExpandedArticle(expandedArticle === articleId ? null : articleId);
+  };
+
+  const formatContent = (content: string) => {
+    return content.split('\n').map((line, index) => {
+      if (line.startsWith('**') && line.endsWith('**')) {
+        return <h3 key={index} className="font-semibold text-lg mt-4 mb-2 text-gray-800">{line.slice(2, -2)}</h3>;
+      }
+      if (line.startsWith('*') && line.endsWith('*') && !line.startsWith('**')) {
+        return <h4 key={index} className="font-medium text-base mt-3 mb-1 text-gray-700">{line.slice(1, -1)}</h4>;
+      }
+      if (line.startsWith('- ')) {
+        return <li key={index} className="ml-4 mb-1 text-gray-600">{line.slice(2)}</li>;
+      }
+      if (line.trim() === '') {
+        return <br key={index} />;
+      }
+      return <p key={index} className="mb-2 text-gray-600 leading-relaxed">{line}</p>;
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50">
@@ -43,8 +66,20 @@ const TipsScreen: React.FC = () => {
                 <p className="text-gray-600 text-sm leading-relaxed">
                   {article.content}
                 </p>
-                <button className="text-purple-600 font-medium text-sm mt-3 hover:text-purple-800">
-                  Read More →
+                
+                {expandedArticle === article.id && article.fullContent && (
+                  <div className="mt-4 pt-4 border-t border-gray-200">
+                    <div className="text-sm">
+                      {formatContent(article.fullContent)}
+                    </div>
+                  </div>
+                )}
+                
+                <button 
+                  onClick={() => toggleArticle(article.id)}
+                  className="text-purple-600 font-medium text-sm mt-3 hover:text-purple-800 transition-colors"
+                >
+                  {expandedArticle === article.id ? 'Show Less ↑' : 'Read More →'}
                 </button>
               </div>
             </div>

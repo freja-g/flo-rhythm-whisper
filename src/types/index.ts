@@ -38,6 +38,7 @@ export interface Article {
   imageUrl?: string;
   isPublished?: boolean;
   createdAt?: string;
+  fullContent?: string;
 }
 
 export interface ChatMessage {
