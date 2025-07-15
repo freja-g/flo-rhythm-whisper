@@ -1,13 +1,15 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
+import { useAuth } from '../context/AuthContext';
 import { ChatMessage } from '../types';
 import { openAIService } from '../services/openai';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
 import { supabase } from '@/integrations/supabase/client';
 
 const ChatScreen: React.FC = () => {
-  const { user, chatMessages, setChatMessages, setCurrentScreen } = useApp();
+  const { user } = useAuth();
+  const { chatMessages, setChatMessages, setCurrentScreen } = useApp();
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const isOnline = useOnlineStatus();

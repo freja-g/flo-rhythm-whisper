@@ -1,32 +1,49 @@
 
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { User } from '../types';
+import { useAuth } from '../context/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 const CycleSetupScreen: React.FC = () => {
-  const { setUser, setCurrentScreen } = useApp();
-  const [setupData, setSetupData] = useState({
-    name: '',
+  const { user } = useAuth();
+  const { setCurrentScreen } = useApp();
+  const [formData, setFormData] = useState({
     periodLength: 5,
     cycleLength: 28,
     lastPeriodDate: ''
   });
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const newUser: User = {
-      id: Date.now().toString(),
-      name: setupData.name,
-      email: 'user@example.com', // Would come from signup
-      periodLength: setupData.periodLength,
-      cycleLength: setupData.cycleLength,
-      lastPeriodDate: setupData.lastPeriodDate,
-      createdAt: new Date().toISOString()
-    };
+    if (!user) return;
     
-    setUser(newUser);
-    setCurrentScreen('dashboard');
+    setLoading(true);
+    
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          period_length: formData.periodLength,
+          cycle_length: formData.cycleLength,
+          last_period_date: formData.lastPeriodDate
+        })
+        .eq('id', user.id);
+      
+      if (error) {
+        console.error('Error updating profile:', error);
+        alert('Error saving your cycle information. Please try again.');
+        return;
+      }
+      
+      setCurrentScreen('dashboard');
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error saving your cycle information. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -43,18 +60,6 @@ const CycleSetupScreen: React.FC = () => {
           <div className="bg-white rounded-2xl p-6 shadow-lg">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="block text-gray-700 font-medium mb-3">Your Name</label>
-                <input
-                  type="text"
-                  value={setupData.name}
-                  onChange={(e) => setSetupData({...setupData, name: e.target.value})}
-                  className="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-transparent"
-                  placeholder="Enter your name"
-                  required
-                />
-              </div>
-
-              <div>
                 <label className="block text-gray-700 font-medium mb-3">
                   Period Length (days)
                 </label>
@@ -63,12 +68,12 @@ const CycleSetupScreen: React.FC = () => {
                     type="range"
                     min="3"
                     max="10"
-                    value={setupData.periodLength}
-                    onChange={(e) => setSetupData({...setupData, periodLength: parseInt(e.target.value)})}
+                    value={formData.periodLength}
+                    onChange={(e) => setFormData({...formData, periodLength: parseInt(e.target.value)})}
                     className="flex-1"
                   />
                   <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full font-medium">
-                    {setupData.periodLength} days
+                    {formData.periodLength} days
                   </span>
                 </div>
               </div>
@@ -82,12 +87,12 @@ const CycleSetupScreen: React.FC = () => {
                     type="range"
                     min="21"
                     max="35"
-                    value={setupData.cycleLength}
-                    onChange={(e) => setSetupData({...setupData, cycleLength: parseInt(e.target.value)})}
+                    value={formData.cycleLength}
+                    onChange={(e) => setFormData({...formData, cycleLength: parseInt(e.target.value)})}
                     className="flex-1"
                   />
                   <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full font-medium">
-                    {setupData.cycleLength} days
+                    {formData.cycleLength} days
                   </span>
                 </div>
               </div>
@@ -98,8 +103,8 @@ const CycleSetupScreen: React.FC = () => {
                 </label>
                 <input
                   type="date"
-                  value={setupData.lastPeriodDate}
-                  onChange={(e) => setSetupData({...setupData, lastPeriodDate: e.target.value})}
+                  value={formData.lastPeriodDate}
+                  onChange={(e) => setFormData({...formData, lastPeriodDate: e.target.value})}
                   className="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-transparent"
                   required
                 />
@@ -107,9 +112,10 @@ const CycleSetupScreen: React.FC = () => {
 
               <button
                 type="submit"
-                className="w-full bg-gradient-to-r from-pink-400 to-purple-400 text-white font-semibold py-4 rounded-xl hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+                disabled={loading}
+                className="w-full bg-gradient-to-r from-pink-400 to-purple-400 text-white font-semibold py-4 rounded-xl hover:shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Complete Setup
+                {loading ? 'Saving...' : 'Complete Setup'}
               </button>
             </form>
           </div>

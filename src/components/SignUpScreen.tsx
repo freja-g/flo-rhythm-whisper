@@ -1,24 +1,45 @@
 
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
+import { useAuth } from '../context/AuthContext';
 
 const SignUpScreen: React.FC = () => {
   const { setCurrentScreen } = useApp();
+  const { signUp, signIn } = useAuth();
   const [isSignUp, setIsSignUp] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: ''
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isSignUp) {
-      // For demo purposes, we'll just move to cycle setup
-      setCurrentScreen('cycleSetup');
-    } else {
-      // For demo sign in, check if user exists in localStorage
-      setCurrentScreen('dashboard');
+    setLoading(true);
+    setError(null);
+
+    try {
+      if (isSignUp) {
+        const { error } = await signUp(formData.email, formData.password, formData.name);
+        if (error) {
+          setError(error.message);
+        } else {
+          setCurrentScreen('cycleSetup');
+        }
+      } else {
+        const { error } = await signIn(formData.email, formData.password);
+        if (error) {
+          setError(error.message);
+        } else {
+          setCurrentScreen('dashboard');
+        }
+      }
+    } catch (err) {
+      setError('An unexpected error occurred');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -41,6 +62,12 @@ const SignUpScreen: React.FC = () => {
               {isSignUp ? 'Join thousands of women tracking their health' : 'Sign in to continue your journey'}
             </p>
           </div>
+
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+              {error}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {isSignUp && (
@@ -83,9 +110,10 @@ const SignUpScreen: React.FC = () => {
 
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-pink-400 to-purple-400 text-white font-semibold py-4 rounded-xl hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-pink-400 to-purple-400 text-white font-semibold py-4 rounded-xl hover:shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSignUp ? 'Sign Up' : 'Sign In'}
+              {loading ? 'Please wait...' : (isSignUp ? 'Sign Up' : 'Sign In')}
             </button>
           </form>
 

@@ -1,25 +1,111 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
+import { useAuth } from '../context/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { formatDate } from '../utils/dateUtils';
 
+interface Profile {
+  id: string;
+  name: string;
+  email: string;
+  profile_photo?: string;
+  cycle_length?: number;
+  period_length?: number;
+  last_period_date?: string;
+  created_at: string;
+}
+
 const ProfileScreen: React.FC = () => {
-  const { user, setUser, setCurrentScreen } = useApp();
+  const { setCurrentScreen } = useApp();
+  const { user, signOut } = useAuth();
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
   const [showGoalsModal, setShowGoalsModal] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [showHealthReports, setShowHealthReports] = useState(false);
 
-  if (!user) return null;
+  useEffect(() => {
+    if (user) {
+      fetchProfile();
+    }
+  }, [user]);
 
-  const handleDeleteProfile = () => {
+  const fetchProfile = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user?.id)
+        .single();
+
+      if (error) {
+        console.error('Error fetching profile:', error);
+      } else {
+        setProfile(data);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!user || loading) return (
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50 flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
+        <p className="text-gray-600">Loading profile...</p>
+      </div>
+    </div>
+  );
+
+  if (!profile) return null;
+
+  const handleDeleteProfile = async () => {
     if (confirm('Are you sure you want to delete your profile? This action cannot be undone.')) {
-      // Clear all data from localStorage
-      localStorage.removeItem('user');
-      localStorage.removeItem('symptoms');
-      localStorage.removeItem('chatMessages');
-      localStorage.removeItem('currentScreen');
-      setUser(null);
+      await signOut();
       setCurrentScreen('splash');
+    }
+  };
+
+  const handleProfilePictureUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/profile.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('profile-pictures')
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { data: urlData } = supabase.storage
+        .from('profile-pictures')
+        .getPublicUrl(fileName);
+
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ profile_photo: urlData.publicUrl })
+        .eq('id', user.id);
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      setProfile(prev => prev ? { ...prev, profile_photo: urlData.publicUrl } : null);
+    } catch (error) {
+      console.error('Error uploading profile picture:', error);
+      alert('Error uploading profile picture. Please try again.');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -69,29 +155,53 @@ const ProfileScreen: React.FC = () => {
         {/* User Info Card */}
         <div className="bg-white rounded-2xl p-6 shadow-lg">
           <div className="text-center mb-6">
-            <div className="w-20 h-20 bg-gradient-to-r from-pink-400 to-purple-400 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-3xl text-white">👤</span>
+            <div className="relative inline-block">
+              <div className="w-20 h-20 bg-gradient-to-r from-pink-400 to-purple-400 rounded-full flex items-center justify-center mx-auto mb-4 overflow-hidden">
+                {profile.profile_photo ? (
+                  <img 
+                    src={profile.profile_photo} 
+                    alt="Profile" 
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-3xl text-white">👤</span>
+                )}
+              </div>
+              <button
+                onClick={() => document.getElementById('profile-picture-input')?.click()}
+                className="absolute -bottom-2 -right-2 bg-purple-500 text-white p-2 rounded-full hover:bg-purple-600 transition-colors"
+                disabled={uploading}
+              >
+                {uploading ? '⏳' : '📷'}
+              </button>
+              <input
+                id="profile-picture-input"
+                type="file"
+                accept="image/*"
+                onChange={handleProfilePictureUpload}
+                className="hidden"
+              />
             </div>
-            <h2 className="text-2xl font-bold text-gray-800">{user.name}</h2>
-            <p className="text-gray-600">{user.email}</p>
+            <h2 className="text-2xl font-bold text-gray-800">{profile.name}</h2>
+            <p className="text-gray-600">{profile.email}</p>
           </div>
 
           <div className="space-y-3">
             <div className="flex justify-between py-2">
               <span className="text-gray-600">Period Length</span>
-              <span className="font-medium">{user.periodLength} days</span>
+              <span className="font-medium">{profile.period_length || 5} days</span>
             </div>
             <div className="flex justify-between py-2">
               <span className="text-gray-600">Cycle Length</span>
-              <span className="font-medium">{user.cycleLength} days</span>
+              <span className="font-medium">{profile.cycle_length || 28} days</span>
             </div>
             <div className="flex justify-between py-2">
               <span className="text-gray-600">Last Period</span>
-              <span className="font-medium">{formatDate(user.lastPeriodDate)}</span>
+              <span className="font-medium">{profile.last_period_date ? formatDate(profile.last_period_date) : 'Not set'}</span>
             </div>
             <div className="flex justify-between py-2">
               <span className="text-gray-600">Member Since</span>
-              <span className="font-medium">{formatDate(user.createdAt)}</span>
+              <span className="font-medium">{formatDate(profile.created_at)}</span>
             </div>
           </div>
         </div>

@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { AppProvider, useApp } from '../context/AppContext';
+import { AuthProvider, useAuth } from '../context/AuthContext';
 import SplashScreen from '../components/SplashScreen';
 import SignUpScreen from '../components/SignUpScreen';
 import CycleSetupScreen from '../components/CycleSetupScreen';
@@ -14,6 +15,23 @@ import ProfileScreen from '../components/ProfileScreen';
 
 const AppContent: React.FC = () => {
   const { currentScreen } = useApp();
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If user is not authenticated, show splash or signup screen
+  if (!user && currentScreen !== 'splash' && currentScreen !== 'signup') {
+    return <SplashScreen />;
+  }
 
   const renderScreen = () => {
     switch (currentScreen) {
@@ -51,9 +69,11 @@ const AppContent: React.FC = () => {
 
 const Index = () => {
   return (
-    <AppProvider>
-      <AppContent />
-    </AppProvider>
+    <AuthProvider>
+      <AppProvider>
+        <AppContent />
+      </AppProvider>
+    </AuthProvider>
   );
 };
 

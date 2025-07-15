@@ -1,14 +1,68 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
-import { getDaysUntilPeriod, formatDate } from '../utils/dateUtils';
+import { useAuth } from '../context/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { addDays, differenceInDays, format } from 'date-fns';
+
+interface Profile {
+  id: string;
+  name: string;
+  email: string;
+  cycle_length?: number;
+  period_length?: number;
+  last_period_date?: string;
+}
 
 const DashboardScreen: React.FC = () => {
-  const { user, setCurrentScreen } = useApp();
+  const { user } = useAuth();
+  const { setCurrentScreen } = useApp();
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  if (!user) return null;
+  useEffect(() => {
+    if (user) {
+      fetchProfile();
+    }
+  }, [user]);
 
-  const daysUntilPeriod = getDaysUntilPeriod(user.lastPeriodDate, user.cycleLength);
+  const fetchProfile = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user?.id)
+        .single();
+
+      if (error) {
+        console.error('Error fetching profile:', error);
+      } else {
+        setProfile(data);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!user || loading) return (
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50 flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
+        <p className="text-gray-600">Loading...</p>
+      </div>
+    </div>
+  );
+
+  if (!profile) return null;
+
+  const today = new Date();
+  const lastPeriodDate = profile.last_period_date ? new Date(profile.last_period_date) : new Date();
+  const cycleLength = profile.cycle_length || 28;
+  const nextPeriodDate = addDays(lastPeriodDate, cycleLength);
+  const daysUntilNextPeriod = differenceInDays(nextPeriodDate, today);
+  const daysUntilPeriod = daysUntilNextPeriod > 0 ? daysUntilNextPeriod : 0;
   
   const quickActions = [
     {
@@ -42,7 +96,7 @@ const DashboardScreen: React.FC = () => {
   ];
 
   const weekDays = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
-  const today = new Date().getDay();
+  const todayIndex = new Date().getDay();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50 pb-24">
@@ -50,7 +104,7 @@ const DashboardScreen: React.FC = () => {
       <div className="bg-gradient-to-r from-pink-400 to-purple-400 p-6 pb-8">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-white">Welcome {user.name}!</h1>
+            <h1 className="text-2xl font-bold text-white">Welcome {profile.name}!</h1>
             <p className="text-white/90">How are you feeling today?</p>
           </div>
           <button
@@ -81,7 +135,7 @@ const DashboardScreen: React.FC = () => {
               <div
                 key={index}
                 className={`w-10 h-10 rounded-full flex items-center justify-center font-medium ${
-                  index === new Date().getDay()
+                  index === todayIndex
                     ? 'bg-gradient-to-r from-pink-400 to-purple-400 text-white'
                     : 'text-gray-500'
                 }`}

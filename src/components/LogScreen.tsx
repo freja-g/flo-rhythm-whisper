@@ -1,10 +1,12 @@
 
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
+import { useAuth } from '../context/AuthContext';
 import { Symptom } from '../types';
 
 const LogScreen: React.FC = () => {
-  const { user, symptoms, setSymptoms, setCurrentScreen } = useApp();
+  const { user } = useAuth();
+  const { symptoms, setSymptoms, setCurrentScreen } = useApp();
   const [selectedMood, setSelectedMood] = useState('');
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
   const [spotting, setSpotting] = useState<'none' | 'light' | 'heavy'>('none');

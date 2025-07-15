@@ -1,11 +1,9 @@
 
 import React, { createContext, useContext, ReactNode } from 'react';
-import { User, Symptom, ChatMessage, Cycle } from '../types';
+import { Symptom, ChatMessage, Cycle } from '../types';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 
 interface AppContextType {
-  user: User | null;
-  setUser: (user: User | null) => void;
   symptoms: Symptom[];
   setSymptoms: (symptoms: Symptom[]) => void;
   cycles: Cycle[];
@@ -31,7 +29,6 @@ interface AppProviderProps {
 }
 
 export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
-  const [user, setUser] = useLocalStorage<User | null>('user', null);
   const [symptoms, setSymptoms] = useLocalStorage<Symptom[]>('symptoms', []);
   const [cycles, setCycles] = useLocalStorage<Cycle[]>('cycles', []);
   const [chatMessages, setChatMessages] = useLocalStorage<ChatMessage[]>('chatMessages', []);
@@ -39,8 +36,6 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
   return (
     <AppContext.Provider value={{
-      user,
-      setUser,
       symptoms,
       setSymptoms,
       cycles,

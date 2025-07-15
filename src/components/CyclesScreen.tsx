@@ -1,12 +1,14 @@
 
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
+import { useAuth } from '../context/AuthContext';
 import { formatDate } from '../utils/dateUtils';
 import { useToast } from '@/hooks/use-toast';
 import { Cycle } from '../types';
 
 const CyclesScreen: React.FC = () => {
-  const { user, cycles, setCycles, setCurrentScreen } = useApp();
+  const { user } = useAuth();
+  const { cycles, setCycles, setCurrentScreen } = useApp();
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [cycleLength, setCycleLength] = useState(28);
