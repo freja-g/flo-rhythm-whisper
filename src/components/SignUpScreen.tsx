@@ -26,7 +26,7 @@ const SignUpScreen: React.FC = () => {
         if (error) {
           setError(error.message);
         } else {
-          setCurrentScreen('cycleSetup');
+          setCurrentScreen('profileSetup');
         }
       } else {
         const { error } = await signIn(formData.email, formData.password);

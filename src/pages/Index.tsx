@@ -3,6 +3,7 @@ import React from 'react';
 import { AppProvider, useApp } from '../context/AppContext';
 import { AuthProvider, useAuth } from '../context/AuthContext';
 import SplashScreen from '../components/SplashScreen';
+import ProfileSetupScreen from '../components/ProfileSetupScreen';
 import SignUpScreen from '../components/SignUpScreen';
 import CycleSetupScreen from '../components/CycleSetupScreen';
 import DashboardScreen from '../components/DashboardScreen';
@@ -39,6 +40,8 @@ const AppContent: React.FC = () => {
         return <SplashScreen />;
       case 'signup':
         return <SignUpScreen />;
+      case 'profileSetup':
+        return <ProfileSetupScreen />;
       case 'cycleSetup':
         return <CycleSetupScreen />;
       case 'dashboard':
