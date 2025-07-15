@@ -4,6 +4,7 @@ import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { addDays, differenceInDays, format } from 'date-fns';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface Profile {
   id: string;
@@ -12,6 +13,7 @@ interface Profile {
   cycle_length?: number;
   period_length?: number;
   last_period_date?: string;
+  profile_photo?: string;
 }
 
 const DashboardScreen: React.FC = () => {
@@ -111,7 +113,12 @@ const DashboardScreen: React.FC = () => {
             onClick={() => setCurrentScreen('profile')}
             className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center"
           >
-            <span className="text-white text-lg">👤</span>
+            <Avatar className="w-8 h-8">
+              <AvatarImage src={profile.profile_photo || ''} alt={profile.name} />
+              <AvatarFallback className="bg-white/20 text-white text-sm">
+                {profile.name.charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
           </button>
         </div>
 
