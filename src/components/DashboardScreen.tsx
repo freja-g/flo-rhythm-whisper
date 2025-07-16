@@ -250,7 +250,7 @@ const DashboardScreen: React.FC = () => {
             onClick={() => setCurrentScreen('profile')}
             className="flex flex-col items-center space-y-1"
           >
-            <span className="text-gray-400 text-xl">👤</span>
+            <span className="text-gray-400 text-xl">👩</span>
             <span className="text-xs text-gray-400">Profile</span>
           </button>
         </div>

@@ -160,7 +160,7 @@ const ProfileScreen: React.FC = () => {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <span className="text-3xl text-white">👤</span>
+                  <span className="text-3xl text-white">👩</span>
                 )}
               </div>
               <button
@@ -351,7 +351,7 @@ const ProfileScreen: React.FC = () => {
             <span className="text-xs text-gray-400">Tips</span>
           </button>
           <button className="flex flex-col items-center space-y-1">
-            <span className="text-purple-500 text-xl">👤</span>
+            <span className="text-purple-500 text-xl">👩</span>
             <span className="text-xs text-purple-500 font-medium">Profile</span>
           </button>
         </div>
