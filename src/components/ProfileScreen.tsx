@@ -25,6 +25,7 @@ const ProfileScreen: React.FC = () => {
   const [showGoalsModal, setShowGoalsModal] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [showHealthReports, setShowHealthReports] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -63,10 +64,55 @@ const ProfileScreen: React.FC = () => {
 
   if (!profile) return null;
 
-  const handleDeleteProfile = async () => {
-    if (confirm('Are you sure you want to delete your profile? This action cannot be undone.')) {
+  const handleDeleteProfile = () => {
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDeleteProfile = async () => {
+    try {
+      // Delete user profile from database
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', user?.id);
+
+      if (profileError) {
+        console.error('Error deleting profile:', profileError);
+        alert('Error deleting profile. Please try again.');
+        return;
+      }
+
+      // Delete user cycles
+      await supabase
+        .from('cycles')
+        .delete()
+        .eq('user_id', user?.id);
+
+      // Delete user symptoms
+      await supabase
+        .from('symptoms')
+        .delete()
+        .eq('user_id', user?.id);
+
+      // Delete user goals
+      await supabase
+        .from('goals')
+        .delete()
+        .eq('user_id', user?.id);
+
+      // Delete profile picture from storage if exists
+      if (profile?.profile_photo) {
+        await supabase.storage
+          .from('profile-pictures')
+          .remove([`${user?.id}/profile.jpg`, `${user?.id}/profile.png`, `${user?.id}/profile.jpeg`]);
+      }
+
+      // Sign out user
       await signOut();
       setCurrentScreen('splash');
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      alert('Error deleting account. Please try again.');
     }
   };
 
@@ -315,6 +361,40 @@ const ProfileScreen: React.FC = () => {
             >
               Close
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Account Confirmation Dialog */}
+      {showDeleteDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full">
+            <div className="text-center mb-6">
+              <span className="text-6xl">⚠️</span>
+              <h3 className="text-xl font-bold mt-4 text-red-600">Delete Account</h3>
+              <p className="text-gray-600 mt-2">Are you sure you want to delete your account? This action cannot be undone and will permanently remove:</p>
+              <ul className="text-sm text-gray-600 mt-3 text-left space-y-1">
+                <li>• Your profile information</li>
+                <li>• All cycle data</li>
+                <li>• Symptom tracking history</li>
+                <li>• Personal goals</li>
+                <li>• Profile pictures</li>
+              </ul>
+            </div>
+            <div className="flex space-x-3">
+              <button
+                onClick={() => setShowDeleteDialog(false)}
+                className="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg hover:bg-gray-400 transition-colors font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDeleteProfile}
+                className="flex-1 bg-red-500 text-white py-3 rounded-lg hover:bg-red-600 transition-colors font-medium"
+              >
+                Delete Account
+              </button>
+            </div>
           </div>
         </div>
       )}
