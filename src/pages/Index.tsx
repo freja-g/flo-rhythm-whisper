@@ -2,6 +2,7 @@
 import React from 'react';
 import { AppProvider, useApp } from '../context/AppContext';
 import { AuthProvider, useAuth } from '../context/AuthContext';
+import { useKeyboardVisibility } from '../hooks/useKeyboardVisibility';
 import SplashScreen from '../components/SplashScreen';
 import ProfileSetupScreen from '../components/ProfileSetupScreen';
 import SignUpScreen from '../components/SignUpScreen';
@@ -18,6 +19,12 @@ import { FlowerLoading } from '../components/ui/flower-loading';
 const AppContent: React.FC = () => {
   const { currentScreen } = useApp();
   const { user, loading } = useAuth();
+  
+  // Enable keyboard visibility handling for mobile devices
+  useKeyboardVisibility({
+    enabled: true,
+    scrollOffset: 30
+  });
 
   if (loading) {
     return (
