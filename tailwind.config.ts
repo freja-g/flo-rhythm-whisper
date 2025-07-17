@@ -84,11 +84,42 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'grow-stem': {
+					'0%': { height: '0%' },
+					'60%': { height: '80%' },
+					'100%': { height: '60%' }
+				},
+				'grow-leaf': {
+					'0%': { opacity: '0', transform: 'scale(0)' },
+					'70%': { opacity: '1', transform: 'scale(1.1)' },
+					'100%': { opacity: '1', transform: 'scale(1)' }
+				},
+				'bloom-petal': {
+					'0%': { opacity: '0', transform: 'scale(0)' },
+					'50%': { opacity: '0', transform: 'scale(0)' },
+					'80%': { opacity: '1', transform: 'scale(1.1)' },
+					'100%': { opacity: '1', transform: 'scale(1)' }
+				},
+				'bloom-center': {
+					'0%': { opacity: '0', transform: 'scale(0)' },
+					'60%': { opacity: '0', transform: 'scale(0)' },
+					'80%': { opacity: '1', transform: 'scale(1.2)' },
+					'100%': { opacity: '1', transform: 'scale(1)' }
+				},
+				'sparkle': {
+					'0%, 100%': { opacity: '0', transform: 'scale(0)' },
+					'50%': { opacity: '1', transform: 'scale(1)' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'grow-stem': 'grow-stem 2s ease-in-out infinite',
+				'grow-leaf': 'grow-leaf 2.5s ease-in-out infinite',
+				'bloom-petal': 'bloom-petal 3s ease-in-out infinite',
+				'bloom-center': 'bloom-center 3s ease-in-out infinite',
+				'sparkle': 'sparkle 1.5s ease-in-out infinite'
 			}
 		}
 	},
