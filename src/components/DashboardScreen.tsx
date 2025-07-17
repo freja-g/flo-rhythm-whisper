@@ -111,6 +111,13 @@ const DashboardScreen: React.FC = () => {
       onClick: () => setCurrentScreen('log')
     },
     {
+      title: 'My Goals',
+      subtitle: 'Set and track wellness goals',
+      icon: '🎯',
+      color: 'from-green-400 to-emerald-400',
+      onClick: () => setCurrentScreen('goals')
+    },
+    {
       title: 'Tips & Info', 
       subtitle: 'Learn about your health',
       icon: '💡',

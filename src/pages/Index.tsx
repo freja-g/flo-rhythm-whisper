@@ -14,6 +14,7 @@ import SymptomsScreen from '../components/SymptomsScreen';
 import TipsScreen from '../components/TipsScreen';
 import ChatScreen from '../components/ChatScreen';
 import ProfileScreen from '../components/ProfileScreen';
+import GoalsScreen from '../components/GoalsScreen';
 import { FlowerLoading } from '../components/ui/flower-loading';
 
 const AppContent: React.FC = () => {
@@ -61,6 +62,8 @@ const AppContent: React.FC = () => {
         return <TipsScreen />;  
       case 'chat':
         return <ChatScreen />;
+      case 'goals':
+        return <GoalsScreen />;
       case 'profile':
         return <ProfileScreen />;
       default:
