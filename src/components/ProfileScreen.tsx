@@ -189,10 +189,21 @@ const ProfileScreen: React.FC = () => {
     setShowTermsModal(true);
   };
 
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      setCurrentScreen('splash');
+    } catch (error) {
+      console.error('Error signing out:', error);
+      alert('Error signing out. Please try again.');
+    }
+  };
+
   const profileOptions = [
     { title: 'My Goals', icon: '🎯', color: 'text-blue-600', action: handleMyGoals },
     { title: 'Health Reports', icon: '📊', color: 'text-purple-600', action: handleHealthReports },
     { title: 'Terms & Conditions', icon: '📄', color: 'text-gray-600', action: handleTermsAndConditions },
+    { title: 'Sign Out', icon: '🚪', color: 'text-orange-600', action: handleSignOut },
     { title: 'Delete Profile', icon: '🗑️', color: 'text-red-600', action: handleDeleteProfile }
   ];
 
