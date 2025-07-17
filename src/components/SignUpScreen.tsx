@@ -22,11 +22,16 @@ const SignUpScreen: React.FC = () => {
 
     try {
       if (isSignUp) {
-        const { error } = await signUp(formData.email, formData.password, formData.name);
+        const { data, error } = await signUp(formData.email, formData.password, formData.name);
         if (error) {
           setError(error.message);
-        } else {
+        } else if (data.session) {
+          // User is automatically logged in (email confirmation disabled)
           setCurrentScreen('profileSetup');
+        } else {
+          // Email confirmation required
+          setError('Please check your email to confirm your account, then sign in.');
+          setIsSignUp(false); // Switch to sign in mode
         }
       } else {
         const { error } = await signIn(formData.email, formData.password);
