@@ -4,6 +4,7 @@ import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDate } from '../utils/dateUtils';
+import { useOfflineData } from '../hooks/useOfflineData';
 
 interface Profile {
   id: string;
@@ -19,6 +20,7 @@ interface Profile {
 const ProfileScreen: React.FC = () => {
   const { setCurrentScreen } = useApp();
   const { user, signOut } = useAuth();
+  const { isOnline } = useOfflineData();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -70,44 +72,63 @@ const ProfileScreen: React.FC = () => {
 
   const confirmDeleteProfile = async () => {
     try {
-      // Delete user profile from database
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('id', user?.id);
+      setShowDeleteDialog(false);
+      
+      if (isOnline) {
+        // Online: Delete from database immediately
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .delete()
+          .eq('id', user?.id);
 
-      if (profileError) {
-        console.error('Error deleting profile:', profileError);
-        alert('Error deleting profile. Please try again.');
-        return;
+        if (profileError) {
+          console.error('Error deleting profile:', profileError);
+          alert('Error deleting profile. Please try again.');
+          return;
+        }
+
+        // Delete user cycles
+        await supabase
+          .from('cycles')
+          .delete()
+          .eq('user_id', user?.id);
+
+        // Delete user symptoms
+        await supabase
+          .from('symptoms')
+          .delete()
+          .eq('user_id', user?.id);
+
+        // Delete user goals
+        await supabase
+          .from('goals')
+          .delete()
+          .eq('user_id', user?.id);
+
+        // Delete profile picture from storage if exists
+        if (profile?.profile_photo) {
+          await supabase.storage
+            .from('profile-pictures')
+            .remove([`${user?.id}/profile.jpg`, `${user?.id}/profile.png`, `${user?.id}/profile.jpeg`]);
+        }
+      } else {
+        // Offline: Store deletion request locally
+        const deleteRequest = {
+          userId: user?.id,
+          timestamp: new Date().toISOString(),
+          type: 'ACCOUNT_DELETION'
+        };
+        
+        // Store the deletion request in localStorage
+        localStorage.setItem('pendingAccountDeletion', JSON.stringify(deleteRequest));
+        
+        // Clear all offline data immediately
+        localStorage.removeItem('flo-rhythm-offline-data');
+        
+        alert('Account deletion queued. Your data will be removed from the server when you\'re back online.');
       }
 
-      // Delete user cycles
-      await supabase
-        .from('cycles')
-        .delete()
-        .eq('user_id', user?.id);
-
-      // Delete user symptoms
-      await supabase
-        .from('symptoms')
-        .delete()
-        .eq('user_id', user?.id);
-
-      // Delete user goals
-      await supabase
-        .from('goals')
-        .delete()
-        .eq('user_id', user?.id);
-
-      // Delete profile picture from storage if exists
-      if (profile?.profile_photo) {
-        await supabase.storage
-          .from('profile-pictures')
-          .remove([`${user?.id}/profile.jpg`, `${user?.id}/profile.png`, `${user?.id}/profile.jpeg`]);
-      }
-
-      // Sign out user
+      // Sign out user and return to splash
       await signOut();
       setCurrentScreen('splash');
     } catch (error) {

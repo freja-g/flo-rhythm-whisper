@@ -100,6 +100,9 @@ export class SyncService {
 
   async performFullSync(userId: string): Promise<void> {
     try {
+      // Check for pending account deletion first
+      await this.processPendingAccountDeletion();
+      
       // First sync to server (upload local changes)
       await this.syncToServer(userId);
       
@@ -108,6 +111,45 @@ export class SyncService {
       
     } catch (error) {
       console.error('Full sync failed:', error);
+    }
+  }
+
+  private async processPendingAccountDeletion(): Promise<void> {
+    const pendingDeletion = localStorage.getItem('pendingAccountDeletion');
+    
+    if (pendingDeletion) {
+      try {
+        const deleteRequest = JSON.parse(pendingDeletion);
+        
+        // Delete user data from database
+        await Promise.all([
+          supabase.from('profiles').delete().eq('id', deleteRequest.userId),
+          supabase.from('cycles').delete().eq('user_id', deleteRequest.userId),
+          supabase.from('symptoms').delete().eq('user_id', deleteRequest.userId),
+          supabase.from('goals').delete().eq('user_id', deleteRequest.userId)
+        ]);
+
+        // Try to delete profile pictures
+        try {
+          await supabase.storage
+            .from('profile-pictures')
+            .remove([
+              `${deleteRequest.userId}/profile.jpg`, 
+              `${deleteRequest.userId}/profile.png`, 
+              `${deleteRequest.userId}/profile.jpeg`
+            ]);
+        } catch (storageError) {
+          console.log('No profile pictures to delete or error deleting:', storageError);
+        }
+
+        // Clear the pending deletion
+        localStorage.removeItem('pendingAccountDeletion');
+        
+        console.log('Pending account deletion processed successfully');
+        
+      } catch (error) {
+        console.error('Failed to process pending account deletion:', error);
+      }
     }
   }
 }
