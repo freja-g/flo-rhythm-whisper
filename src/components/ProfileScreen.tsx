@@ -28,6 +28,8 @@ const ProfileScreen: React.FC = () => {
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [showHealthReports, setShowHealthReports] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [goals, setGoals] = useState<any[]>([]);
+  const [goalsLoading, setGoalsLoading] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -41,7 +43,7 @@ const ProfileScreen: React.FC = () => {
         .from('profiles')
         .select('*')
         .eq('id', user?.id)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Error fetching profile:', error);
@@ -176,8 +178,27 @@ const ProfileScreen: React.FC = () => {
     }
   };
 
-  const handleMyGoals = () => {
+  const handleMyGoals = async () => {
     setShowGoalsModal(true);
+    setGoalsLoading(true);
+    
+    try {
+      const { data, error } = await supabase
+        .from('goals')
+        .select('*')
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching goals:', error);
+      } else {
+        setGoals(data || []);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setGoalsLoading(false);
+    }
   };
 
 
@@ -309,25 +330,56 @@ const ProfileScreen: React.FC = () => {
       {/* Goals Modal */}
       {showGoalsModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full">
-            <h3 className="text-xl font-bold mb-4">My Goals</h3>
-            <div className="space-y-3">
-              <div className="p-3 bg-pink-50 rounded-lg">
-                <h4 className="font-medium text-pink-800">Track Cycle Regularly</h4>
-                <p className="text-sm text-pink-600">Log symptoms and moods daily</p>
-              </div>
-              <div className="p-3 bg-blue-50 rounded-lg">
-                <h4 className="font-medium text-blue-800">Understand Patterns</h4>
-                <p className="text-sm text-blue-600">Identify cycle patterns and symptoms</p>
-              </div>
-              <div className="p-3 bg-green-50 rounded-lg">
-                <h4 className="font-medium text-green-800">Improve Wellness</h4>
-                <p className="text-sm text-green-600">Use insights for better health</p>
-              </div>
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-96 overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold">My Goals</h3>
+              <button
+                onClick={() => setCurrentScreen('goals')}
+                className="text-purple-500 text-sm font-medium"
+              >
+                Add Goal +
+              </button>
             </div>
+            
+            {goalsLoading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mx-auto mb-4"></div>
+                <p className="text-gray-600">Loading goals...</p>
+              </div>
+            ) : goals.length > 0 ? (
+              <div className="space-y-3">
+                {goals.map((goal) => (
+                  <div key={goal.id} className="p-4 bg-gradient-to-r from-pink-50 to-purple-50 rounded-lg border border-pink-100">
+                    <h4 className="font-semibold text-gray-800 mb-1">{goal.title}</h4>
+                    {goal.description && (
+                      <p className="text-sm text-gray-600">{goal.description}</p>
+                    )}
+                    <p className="text-xs text-gray-500 mt-2">
+                      Created: {formatDate(goal.created_at)}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <span className="text-6xl">🎯</span>
+                <h4 className="text-lg font-medium mt-4">No Goals Yet</h4>
+                <p className="text-gray-600 text-sm mb-4">Start setting your wellness goals to track your progress</p>
+                <button
+                  onClick={() => {
+                    setShowGoalsModal(false);
+                    setCurrentScreen('goals');
+                  }}
+                  className="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-colors"
+                >
+                  Add Your First Goal
+                </button>
+              </div>
+            )}
+            
             <button
               onClick={() => setShowGoalsModal(false)}
-              className="mt-4 w-full bg-pink-500 text-white py-2 rounded-lg hover:bg-pink-600 transition-colors"
+              className="mt-4 w-full bg-gray-500 text-white py-2 rounded-lg hover:bg-gray-600 transition-colors"
             >
               Close
             </button>
