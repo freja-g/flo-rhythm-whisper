@@ -211,11 +211,28 @@ export class NotificationService {
       const notificationType = 'period-reminder-today';
       
       if (!this.isNotificationSnoozed(notificationType)) {
-        this.sendNotification('Period Started 🌸', {
-          body: 'Your period is expected to start today. Track your cycle in the app!',
+        this.sendNotification('🩸 Period Day is Here! 🌸', {
+          body: 'Your period is expected to start today. Don\'t forget to log it and track your symptoms!',
           tag: notificationType,
-          canSnooze: true
+          canSnooze: true,
+          requireInteraction: true // Keep notification visible until user interacts
         });
+      }
+      
+      // Send a follow-up reminder in the evening if not snoozed
+      const eveningReminderType = 'period-reminder-today-evening';
+      const now = new Date();
+      
+      if (now.getHours() >= 18 && !this.isNotificationSnoozed(eveningReminderType)) {
+        setTimeout(() => {
+          if (!this.isNotificationSnoozed(eveningReminderType)) {
+            this.sendNotification('Period Tracking Reminder 🌸', {
+              body: 'Did you start your period today? Don\'t forget to log it in the app!',
+              tag: eveningReminderType,
+              canSnooze: true
+            });
+          }
+        }, 2 * 60 * 60 * 1000); // 2 hours delay
       }
     }
   }
