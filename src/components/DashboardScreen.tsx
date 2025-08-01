@@ -185,7 +185,7 @@ const DashboardScreen: React.FC = () => {
             <div className="mt-4 pt-4 border-t border-gray-200">
               <p className="text-sm text-gray-600 mb-2">Get reminders before your period</p>
               <Button 
-                onClick={enableNotifications}
+                onClick={() => enableNotifications(5)}
                 size="sm"
                 className="bg-purple-500 hover:bg-purple-600 text-white"
               >

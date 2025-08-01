@@ -5,6 +5,11 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDate } from '../utils/dateUtils';
 import { useOfflineData } from '../hooks/useOfflineData';
+import { useNotifications } from '../hooks/useNotifications';
+import { NotificationPopup } from './ui/notification-popup';
+import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { Slider } from '@/components/ui/slider';
 
 interface Profile {
   id: string;
@@ -28,6 +33,19 @@ const ProfileScreen: React.FC = () => {
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [showHealthReports, setShowHealthReports] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showNotificationsModal, setShowNotificationsModal] = useState(false);
+  
+  const {
+    notificationsEnabled,
+    enableNotifications,
+    disableNotifications,
+    showPopup,
+    popupData,
+    snoozePopup,
+    dismissPopup,
+    getSettings,
+    updateSettings
+  } = useNotifications(profile);
 
   useEffect(() => {
     if (user) {
@@ -199,8 +217,13 @@ const ProfileScreen: React.FC = () => {
     }
   };
 
+  const handleNotifications = () => {
+    setShowNotificationsModal(true);
+  };
+
   const profileOptions = [
     { title: 'My Goals', icon: '🎯', color: 'text-blue-600', action: handleMyGoals },
+    { title: 'Notifications', icon: '🔔', color: 'text-purple-600', action: handleNotifications },
     { title: 'Health Reports', icon: '📊', color: 'text-purple-600', action: handleHealthReports },
     { title: 'Terms & Conditions', icon: '📄', color: 'text-gray-600', action: handleTermsAndConditions },
     { title: 'Sign Out', icon: '🚪', color: 'text-orange-600', action: handleSignOut },
@@ -397,6 +420,115 @@ const ProfileScreen: React.FC = () => {
         </div>
       )}
 
+      {/* Notifications Modal */}
+      {showNotificationsModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full">
+            <h3 className="text-xl font-bold mb-4 flex items-center">
+              <span className="mr-2">🔔</span>
+              Notification Settings
+            </h3>
+            
+            <div className="space-y-6">
+              {/* Enable/Disable Notifications */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-medium">Period Reminders</h4>
+                  <p className="text-sm text-gray-600">Get notified before your period starts</p>
+                </div>
+                <Switch
+                  checked={notificationsEnabled}
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      enableNotifications(getSettings().daysBefore);
+                    } else {
+                      disableNotifications();
+                    }
+                  }}
+                />
+              </div>
+
+              {notificationsEnabled && (
+                <>
+                  {/* Days Before Setting */}
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      Remind me {getSettings().daysBefore} days before
+                    </label>
+                    <Slider
+                      value={[getSettings().daysBefore]}
+                      onValueChange={(value) => updateSettings({ daysBefore: value[0] })}
+                      max={7}
+                      min={1}
+                      step={1}
+                      className="w-full"
+                    />
+                    <div className="flex justify-between text-xs text-gray-500 mt-1">
+                      <span>1 day</span>
+                      <span>7 days</span>
+                    </div>
+                  </div>
+
+                  {/* Snooze Duration */}
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      Snooze duration: {getSettings().snoozeDuration} hours
+                    </label>
+                    <Slider
+                      value={[getSettings().snoozeDuration]}
+                      onValueChange={(value) => updateSettings({ snoozeDuration: value[0] })}
+                      max={72}
+                      min={1}
+                      step={1}
+                      className="w-full"
+                    />
+                    <div className="flex justify-between text-xs text-gray-500 mt-1">
+                      <span>1 hour</span>
+                      <span>72 hours</span>
+                    </div>
+                  </div>
+
+                  {/* Auto-calculation info */}
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <h5 className="font-medium text-blue-800 mb-1">Smart Period Tracking</h5>
+                    <p className="text-sm text-blue-600">
+                      The app automatically calculates missed periods based on your cycle pattern and updates dates accordingly.
+                    </p>
+                  </div>
+                </>
+              )}
+
+              {!notificationsEnabled && (
+                <div className="bg-gray-50 p-4 rounded-lg text-center">
+                  <span className="text-4xl mb-2 block">🔕</span>
+                  <p className="text-sm text-gray-600">
+                    Enable notifications to receive period reminders and never miss important dates.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="flex space-x-3 mt-6">
+              <Button
+                onClick={() => setShowNotificationsModal(false)}
+                variant="outline"
+                className="flex-1"
+              >
+                Close
+              </Button>
+              {!notificationsEnabled && (
+                <Button
+                  onClick={() => enableNotifications(5)}
+                  className="flex-1"
+                >
+                  Enable Notifications
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Delete Account Confirmation Dialog */}
       {showDeleteDialog && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -430,6 +562,15 @@ const ProfileScreen: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Notification Popup */}
+      <NotificationPopup
+        title={popupData.title}
+        message={popupData.message}
+        onSnooze={snoozePopup}
+        onDismiss={dismissPopup}
+        isVisible={showPopup}
+      />
 
       {/* Bottom Navigation */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-6 py-4">
