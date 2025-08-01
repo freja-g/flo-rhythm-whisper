@@ -179,29 +179,6 @@ const DashboardScreen: React.FC = () => {
           <p className="text-gray-600">
             Your period starts in <span className="font-bold text-purple-600">{daysUntilPeriod} days</span>
           </p>
-          
-          {/* Notification Settings */}
-          {!notificationsEnabled && (
-            <div className="mt-4 pt-4 border-t border-gray-200">
-              <p className="text-sm text-gray-600 mb-2">Get reminders before your period</p>
-              <Button 
-                onClick={() => enableNotifications(5)}
-                size="sm"
-                className="bg-purple-500 hover:bg-purple-600 text-white"
-              >
-                🔔 Enable Notifications
-              </Button>
-            </div>
-          )}
-          
-          {notificationsEnabled && (
-            <div className="mt-4 pt-4 border-t border-gray-200">
-              <div className="flex items-center justify-center space-x-2">
-                <span className="text-green-600">🔔</span>
-                <p className="text-sm text-green-600 font-medium">Notifications enabled</p>
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
