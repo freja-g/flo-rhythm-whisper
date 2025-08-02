@@ -40,7 +40,13 @@ export class NotificationService {
   private saveSettings() {
     localStorage.setItem('notification-settings', JSON.stringify(this.settings));
   }
+private inAppNotificationCallback: ((title: string, options?: NotificationOptions & { canSnooze?: boolean }) => void) | null = null;
 
+registerInAppNotificationCallback(
+  callback: (title: string, options?: NotificationOptions & { canSnooze?: boolean }) => void
+) {
+  this.inAppNotificationCallback = callback;
+}
   async requestPermission(): Promise<boolean> {
     if (!('Notification' in window)) {
       console.log('This browser does not support notifications');
