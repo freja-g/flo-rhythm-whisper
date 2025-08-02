@@ -26,7 +26,7 @@ export const useNotifications = (profile: Profile | null) => {
     if (profile && notificationsEnabled && profile.last_period_date && profile.cycle_length) {
       notificationService.schedulePeriodicCheck(profile.last_period_date, profile.cycle_length);
     }
-  }, [profile, notificationsEnabled]);
+  }, [profile, notificationsEnabled, profile?.last_period_date, profile?.cycle_length]);
 
   useEffect(() => {
     // Listen for auto-calculated period updates
@@ -46,6 +46,9 @@ export const useNotifications = (profile: Profile | null) => {
               title: "Period Date Updated",
               description: `Auto-calculated your last period date to ${new Date(newDate).toLocaleDateString()} based on your cycle pattern.`,
             });
+            
+            // Trigger a refetch or update of the profile to sync across components
+            window.dispatchEvent(new CustomEvent('profile-updated'));
           }
         } catch (error) {
           console.error('Error updating auto-calculated period date:', error);

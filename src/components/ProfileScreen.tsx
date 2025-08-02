@@ -53,6 +53,18 @@ const ProfileScreen: React.FC = () => {
     }
   }, [user]);
 
+  useEffect(() => {
+    // Listen for profile updates to sync across components
+    const handleProfileUpdate = () => {
+      if (user) {
+        fetchProfile();
+      }
+    };
+
+    window.addEventListener('profile-updated', handleProfileUpdate);
+    return () => window.removeEventListener('profile-updated', handleProfileUpdate);
+  }, [user]);
+
   const fetchProfile = async () => {
     try {
       const { data, error } = await supabase
