@@ -14,6 +14,15 @@ export const useNotifications = (profile: Profile | null) => {
   const notificationService = NotificationService.getInstance();
 
   useEffect(() => {
+  notificationService.registerInAppNotificationCallback((title, options) => {
+    showNotificationPopup(title, options?.body || '');
+  });
+  // No dependencies needed; register once
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, 
+[]);
+  
+  useEffect(() => {
     // Check current permission status
     if ('Notification' in window) {
       const settings = notificationService.getSettings();
