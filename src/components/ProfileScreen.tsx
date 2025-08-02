@@ -5,27 +5,19 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDate } from '../utils/dateUtils';
 import { useOfflineData } from '../hooks/useOfflineData';
+import { OfflineStorageService } from '../services/offlineStorage';
 import { useNotifications } from '../hooks/useNotifications';
 import { NotificationPopup } from './ui/notification-popup';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
-
-interface Profile {
-  id: string;
-  name: string;
-  email: string;
-  profile_photo?: string;
-  cycle_length?: number;
-  period_length?: number;
-  last_period_date?: string;
-  created_at: string;
-}
+import { Profile } from '../types';
 
 const ProfileScreen: React.FC = () => {
   const { setCurrentScreen } = useApp();
   const { user, signOut } = useAuth();
   const { isOnline } = useOfflineData();
+  const offlineStorage = OfflineStorageService.getInstance();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -67,6 +59,16 @@ const ProfileScreen: React.FC = () => {
 
   const fetchProfile = async () => {
     try {
+      if (!navigator.onLine) {
+        // Use offline data when offline
+        const offlineData = offlineStorage.getProfile(user?.id || '');
+        if (offlineData) {
+          setProfile(offlineData);
+        }
+        setLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -75,11 +77,23 @@ const ProfileScreen: React.FC = () => {
 
       if (error) {
         console.error('Error fetching profile:', error);
+        // Try to load from offline storage as fallback
+        const offlineData = offlineStorage.getProfile(user?.id || '');
+        if (offlineData) {
+          setProfile(offlineData);
+        }
       } else {
         setProfile(data);
+        // Save to offline storage
+        offlineStorage.saveProfile(data);
       }
     } catch (error) {
       console.error('Error:', error);
+      // Try to load from offline storage as fallback
+      const offlineData = offlineStorage.getProfile(user?.id || '');
+      if (offlineData) {
+        setProfile(offlineData);
+      }
     } finally {
       setLoading(false);
     }
