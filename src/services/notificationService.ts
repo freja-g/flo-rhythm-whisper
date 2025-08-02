@@ -1,6 +1,4 @@
 import { addDays, getDaysBetween } from '../utils/dateUtils';
-import { Capacitor } from '@capacitor/core';
-import { LocalNotifications, ScheduleOptions } from '@capacitor/local-notifications';
 
 interface NotificationSettings {
   enabled: boolean;
@@ -23,7 +21,6 @@ export class NotificationService {
   
   private constructor() {
     this.loadSettings();
-    this.initializeCapacitorNotifications();
   }
   
   static getInstance(): NotificationService {
@@ -44,72 +41,22 @@ export class NotificationService {
     localStorage.setItem('notification-settings', JSON.stringify(this.settings));
   }
 
-  private async initializeCapacitorNotifications() {
-    if (Capacitor.isNativePlatform()) {
-      try {
-        // Initialize local notifications for Capacitor
-        await LocalNotifications.requestPermissions();
-        
-        // Listen for notification clicks
-        LocalNotifications.addListener('localNotificationActionPerformed', (notification) => {
-          console.log('Notification clicked:', notification);
-          // Handle notification click (e.g., open app, navigate to specific screen)
-        });
-      } catch (error) {
-        console.error('Error initializing Capacitor notifications:', error);
-      }
-    }
-  }
-
-  private inAppNotificationCallback: ((title: string, options?: NotificationOptions & { canSnooze?: boolean }) => void) | null = null;
-
-  registerInAppNotificationCallback(
-    callback: (title: string, options?: NotificationOptions & { canSnooze?: boolean }) => void
-  ) {
-    this.inAppNotificationCallback = callback;
-  }
-
   async requestPermission(): Promise<boolean> {
-    if (Capacitor.isNativePlatform()) {
-      try {
-        const result = await LocalNotifications.requestPermissions();
-        return result.display === 'granted';
-      } catch (error) {
-        console.error('Error requesting Capacitor notification permissions:', error);
-        return false;
-      }
-    } else {
-      // Web browser fallback
-      if (!('Notification' in window)) {
-        console.log('This browser does not support notifications');
-        return false;
-      }
-
-      if (Notification.permission === 'granted') {
-        return true;
-      }
-
-      if (Notification.permission === 'denied') {
-        return false;
-      }
-
-      const permission = await Notification.requestPermission();
-      return permission === 'granted';
+    if (!('Notification' in window)) {
+      console.log('This browser does not support notifications');
+      return false;
     }
-  }
 
-  async checkPermissions(): Promise<boolean> {
-    if (Capacitor.isNativePlatform()) {
-      try {
-        const result = await LocalNotifications.checkPermissions();
-        return result.display === 'granted';
-      } catch (error) {
-        console.error('Error checking Capacitor notification permissions:', error);
-        return false;
-      }
-    } else {
-      return Notification.permission === 'granted';
+    if (Notification.permission === 'granted') {
+      return true;
     }
+
+    if (Notification.permission === 'denied') {
+      return false;
+    }
+
+    const permission = await Notification.requestPermission();
+    return permission === 'granted';
   }
 
   enableNotifications(daysBefore: number = 5): boolean {
@@ -198,66 +145,23 @@ export class NotificationService {
     }
   }
 
-  async sendNotification(title: string, options?: NotificationOptions & { canSnooze?: boolean }): Promise<void> {
-    if (!this.settings.enabled) return;
+  sendNotification(title: string, options?: NotificationOptions & { canSnooze?: boolean }): void {
+    if (!this.settings.enabled || Notification.permission !== 'granted') {
+      return;
+    }
 
-    const hasPermission = await this.checkPermissions();
-    
-    if (Capacitor.isNativePlatform() && hasPermission) {
-      try {
-        // Use Capacitor Local Notifications for native apps
-        const notificationOptions: ScheduleOptions = {
-          notifications: [{
-            title,
-            body: options?.body || '',
-            id: Math.floor(Math.random() * 1000000),
-            schedule: { at: new Date(Date.now() + 1000) }, // Schedule immediately
-            sound: 'default',
-            attachments: options?.icon ? [{ id: 'icon', url: options.icon }] : undefined,
-            actionTypeId: options?.canSnooze ? 'snooze' : 'dismiss',
-            extra: {
-              type: options?.tag || 'general',
-              canSnooze: options?.canSnooze || false
-            }
-          }]
-        };
+    const notification = new Notification(title, {
+      icon: '/favicon.png',
+      badge: '/favicon.png',
+      ...options
+    });
 
-        await LocalNotifications.schedule(notificationOptions);
-        console.log('Capacitor notification sent:', title);
-      } catch (error) {
-        console.error('Error sending Capacitor notification:', error);
-        // Fallback to in-app notification
-        if (this.inAppNotificationCallback) {
-          this.inAppNotificationCallback(title, options);
-        }
-      }
-    } else if (!Capacitor.isNativePlatform() && hasPermission) {
-      // Use Web Notifications API for browser
-      try {
-        const notification = new Notification(title, {
-          icon: '/favicon.png',
-          badge: '/favicon.png',
-          ...options
-        });
-
-        if (options?.canSnooze) {
-          notification.onclick = () => {
-            this.snoozeNotification(options.tag || 'period-reminder');
-            notification.close();
-          };
-        }
-      } catch (error) {
-        console.error('Error sending web notification:', error);
-        // Fallback to in-app notification
-        if (this.inAppNotificationCallback) {
-          this.inAppNotificationCallback(title, options);
-        }
-      }
-    } else {
-      // Fallback to in-app notification when no permission or unsupported
-      if (this.inAppNotificationCallback) {
-        this.inAppNotificationCallback(title, options);
-      }
+    // Add click handler for snoozing
+    if (options?.canSnooze) {
+      notification.onclick = () => {
+        this.snoozeNotification(options.tag || 'period-reminder');
+        notification.close();
+      };
     }
   }
 
@@ -267,7 +171,7 @@ export class NotificationService {
     window.dispatchEvent(new CustomEvent('notification-snoozed', { detail: { type } }));
   }
 
-  async checkPeriodReminder(lastPeriodDate: string, cycleLength: number): Promise<void> {
+  checkPeriodReminder(lastPeriodDate: string, cycleLength: number): void {
     if (!this.settings.enabled) return;
 
     const today = new Date();
@@ -281,7 +185,7 @@ export class NotificationService {
       const notificationType = `period-reminder-${this.settings.daysBefore}days`;
       
       if (!this.isNotificationSnoozed(notificationType)) {
-        await this.sendNotification(`Period Reminder 🌸`, {
+        this.sendNotification(`Period Reminder 🌸`, {
           body: `Your period is expected to start in ${this.settings.daysBefore} days. Don't forget to prepare!`,
           tag: notificationType,
           canSnooze: true
@@ -294,7 +198,7 @@ export class NotificationService {
       const notificationType = 'period-reminder-1day';
       
       if (!this.isNotificationSnoozed(notificationType)) {
-        await this.sendNotification('Period Tomorrow 🌸', {
+        this.sendNotification('Period Tomorrow 🌸', {
           body: 'Your period is expected to start tomorrow. Make sure you\'re prepared!',
           tag: notificationType,
           canSnooze: true
@@ -307,7 +211,7 @@ export class NotificationService {
       const notificationType = 'period-reminder-today';
       
       if (!this.isNotificationSnoozed(notificationType)) {
-        await this.sendNotification('🩸 Period Day is Here! 🌸', {
+        this.sendNotification('🩸 Period Day is Here! 🌸', {
           body: 'Your period is expected to start today. Don\'t forget to log it and track your symptoms!',
           tag: notificationType,
           canSnooze: true,
@@ -320,9 +224,9 @@ export class NotificationService {
       const now = new Date();
       
       if (now.getHours() >= 18 && !this.isNotificationSnoozed(eveningReminderType)) {
-        setTimeout(async () => {
+        setTimeout(() => {
           if (!this.isNotificationSnoozed(eveningReminderType)) {
-            await this.sendNotification('Period Tracking Reminder 🌸', {
+            this.sendNotification('Period Tracking Reminder 🌸', {
               body: 'Did you start your period today? Don\'t forget to log it in the app!',
               tag: eveningReminderType,
               canSnooze: true
@@ -360,7 +264,7 @@ export class NotificationService {
     return { shouldUpdate: false, newDate: lastPeriodDate };
   }
 
-  async schedulePeriodicCheck(lastPeriodDate: string, cycleLength: number): Promise<void> {
+  schedulePeriodicCheck(lastPeriodDate: string, cycleLength: number): void {
     // Check for auto-calculation first
     const autoCalc = this.autoCalculateMissedPeriods(lastPeriodDate, cycleLength);
     let effectiveLastPeriodDate = autoCalc.shouldUpdate ? autoCalc.newDate : lastPeriodDate;
@@ -373,7 +277,7 @@ export class NotificationService {
     }
     
     // Check immediately
-    await this.checkPeriodReminder(effectiveLastPeriodDate, cycleLength);
+    this.checkPeriodReminder(effectiveLastPeriodDate, cycleLength);
     
     // Set up daily check at 9 AM
     const now = new Date();
@@ -390,7 +294,7 @@ export class NotificationService {
     setTimeout(() => {
       this.checkPeriodReminder(effectiveLastPeriodDate, cycleLength);
       // Then check every 24 hours
-      setInterval(async () => {
+      setInterval(() => {
         const latestAutoCalc = this.autoCalculateMissedPeriods(effectiveLastPeriodDate, cycleLength);
         if (latestAutoCalc.shouldUpdate) {
           effectiveLastPeriodDate = latestAutoCalc.newDate;
@@ -398,7 +302,7 @@ export class NotificationService {
             detail: { newDate: latestAutoCalc.newDate, originalDate: effectiveLastPeriodDate }
           }));
         }
-        await this.checkPeriodReminder(effectiveLastPeriodDate, cycleLength);
+        this.checkPeriodReminder(effectiveLastPeriodDate, cycleLength);
       }, 24 * 60 * 60 * 1000);
     }, timeUntil9AM);
   }
