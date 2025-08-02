@@ -152,24 +152,26 @@ registerInAppNotificationCallback(
   }
 
   sendNotification(title: string, options?: NotificationOptions & { canSnooze?: boolean }): void {
-    if (!this.settings.enabled || Notification.permission !== 'granted') {
-      return;
-    }
+  if (!this.settings.enabled) return;
 
+  if (Notification.permission === 'granted') {
     const notification = new Notification(title, {
       icon: '/favicon.png',
       badge: '/favicon.png',
       ...options
     });
 
-    // Add click handler for snoozing
     if (options?.canSnooze) {
       notification.onclick = () => {
         this.snoozeNotification(options.tag || 'period-reminder');
         notification.close();
       };
     }
+  } else if (this.inAppNotificationCallback) {
+    // Fallback to in-app notification
+    this.inAppNotificationCallback(title, options);
   }
+}
 
   snoozeNotification(type: string): void {
     this.addSnoozedNotification(type);
