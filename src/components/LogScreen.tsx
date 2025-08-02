@@ -3,10 +3,13 @@ import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import { Symptom } from '../types';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const LogScreen: React.FC = () => {
   const { user } = useAuth();
   const { symptoms, setSymptoms, setCurrentScreen } = useApp();
+  const { toast } = useToast();
   const [selectedMood, setSelectedMood] = useState('');
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
   const [spotting, setSpotting] = useState<'none' | 'light' | 'heavy'>('none');
@@ -34,13 +37,14 @@ const LogScreen: React.FC = () => {
     );
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!user) return;
 
+    const currentDate = new Date().toISOString().split('T')[0];
     const newSymptom: Symptom = {
       id: Date.now().toString(),
       userId: user.id,
-      date: new Date().toISOString().split('T')[0],
+      date: currentDate,
       mood: selectedMood,
       symptoms: selectedSymptoms,
       spotting,
@@ -49,6 +53,45 @@ const LogScreen: React.FC = () => {
     };
 
     setSymptoms([...symptoms, newSymptom]);
+
+    // If user logged menstrual flow (not none), update the profile's last_period_date
+    if (menstrualFlow !== 'none') {
+      try {
+        const { error } = await supabase
+          .from('profiles')
+          .update({ last_period_date: currentDate })
+          .eq('id', user.id);
+          
+        if (!error) {
+          toast({
+            title: "Period Date Updated",
+            description: "Your last period date has been updated based on your logged flow.",
+          });
+          
+          // Trigger profile update event to sync across components
+          window.dispatchEvent(new CustomEvent('profile-updated'));
+        }
+      } catch (error) {
+        console.error('Error updating period date:', error);
+      }
+    }
+
+    // Save symptom to database
+    try {
+      await supabase
+        .from('symptoms')
+        .insert({
+          user_id: user.id,
+          date: currentDate,
+          mood: selectedMood,
+          symptoms: selectedSymptoms,
+          spotting,
+          menstrual_flow: menstrualFlow,
+        });
+    } catch (error) {
+      console.error('Error saving symptom:', error);
+    }
+
     setCurrentScreen('dashboard');
   };
 
