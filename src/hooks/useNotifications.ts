@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { NotificationService } from '../services/notificationService';
+import { MobileNotificationService } from '../services/mobileNotificationService';
 import { useAuth } from '../context/AuthContext';
 import { Profile } from '../types';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,14 +11,16 @@ export const useNotifications = (profile: Profile | null) => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [popupData, setPopupData] = useState({ title: '', message: '' });
-  const notificationService = NotificationService.getInstance();
+  const notificationService = MobileNotificationService.getInstance();
 
   useEffect(() => {
     // Check current permission status
-    if ('Notification' in window) {
+    const checkPermission = async () => {
       const settings = notificationService.getSettings();
-      setNotificationsEnabled(Notification.permission === 'granted' && settings.enabled);
-    }
+      const hasPermission = await notificationService.requestPermission();
+      setNotificationsEnabled(hasPermission && settings.enabled);
+    };
+    checkPermission();
   }, []);
 
   useEffect(() => {
@@ -82,7 +84,7 @@ export const useNotifications = (profile: Profile | null) => {
       setNotificationsEnabled(true);
       
       if (profile && profile.last_period_date && profile.cycle_length) {
-        notificationService.schedulePeriodicCheck(profile.last_period_date, profile.cycle_length);
+        await notificationService.schedulePeriodicCheck(profile.last_period_date, profile.cycle_length);
       }
       
       toast({
@@ -92,7 +94,7 @@ export const useNotifications = (profile: Profile | null) => {
     } else {
       toast({
         title: "Notifications Blocked",
-        description: "Please enable notifications in your browser settings to receive period reminders.",
+        description: "Please enable notifications in your device settings to receive period reminders.",
         variant: "destructive",
       });
     }
@@ -125,10 +127,11 @@ export const useNotifications = (profile: Profile | null) => {
 
   const getSettings = () => notificationService.getSettings();
   
-  const updateSettings = (settings: any) => {
+  const updateSettings = async (settings: any) => {
     notificationService.updateSettings(settings);
     if (settings.enabled !== undefined) {
-      setNotificationsEnabled(settings.enabled && Notification.permission === 'granted');
+      const hasPermission = await notificationService.requestPermission();
+      setNotificationsEnabled(settings.enabled && hasPermission);
     }
   };
 
