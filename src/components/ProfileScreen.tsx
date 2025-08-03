@@ -29,10 +29,8 @@ const ProfileScreen: React.FC = () => {
   
   const {
     notificationsEnabled,
-    notificationStats,
     enableNotifications,
     disableNotifications,
-    sendTestNotification,
     showPopup,
     popupData,
     snoozePopup,
@@ -458,37 +456,6 @@ const ProfileScreen: React.FC = () => {
             </h3>
             
             <div className="space-y-6">
-              {/* Notification Status */}
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h4 className="font-medium mb-2">Status</h4>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-gray-600">Permission:</span>
-                    <span className={`ml-1 font-medium ${
-                      notificationStats.permission === 'granted' ? 'text-green-600' : 
-                      notificationStats.permission === 'denied' ? 'text-red-600' : 'text-yellow-600'
-                    }`}>
-                      {notificationStats.permission === 'granted' ? 'Granted' : 
-                       notificationStats.permission === 'denied' ? 'Denied' : 'Not Set'}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-gray-600">Scheduled:</span>
-                    <span className="ml-1 font-medium">{notificationStats.scheduled}</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-600">Snoozed:</span>
-                    <span className="ml-1 font-medium">{notificationStats.snoozed}</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-600">Status:</span>
-                    <span className={`ml-1 font-medium ${notificationStats.enabled ? 'text-green-600' : 'text-gray-600'}`}>
-                      {notificationStats.enabled ? 'Active' : 'Inactive'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
               {/* Enable/Disable Notifications */}
               <div className="flex items-center justify-between">
                 <div>
@@ -545,55 +512,6 @@ const ProfileScreen: React.FC = () => {
                       <span>1 hour</span>
                       <span>72 hours</span>
                     </div>
-                  </div>
-
-                  {/* Reminder Time */}
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Reminder Time
-                    </label>
-                    <input
-                      type="time"
-                      value={getSettings().reminderTime}
-                      onChange={(e) => updateSettings({ reminderTime: e.target.value })}
-                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-400 focus:border-transparent"
-                    />
-                  </div>
-
-                  {/* Additional Options */}
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h5 className="font-medium">Weekly Reminders</h5>
-                        <p className="text-xs text-gray-600">Get weekly check-in reminders</p>
-                      </div>
-                      <Switch
-                        checked={getSettings().weeklyReminder}
-                        onCheckedChange={(checked) => updateSettings({ weeklyReminder: checked })}
-                      />
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h5 className="font-medium">Ovulation Reminders</h5>
-                        <p className="text-xs text-gray-600">Get notified during fertile window</p>
-                      </div>
-                      <Switch
-                        checked={getSettings().ovulationReminder}
-                        onCheckedChange={(checked) => updateSettings({ ovulationReminder: checked })}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Test Notification */}
-                  <div className="pt-4 border-t">
-                    <Button
-                      onClick={sendTestNotification}
-                      variant="outline"
-                      className="w-full"
-                    >
-                      Send Test Notification
-                    </Button>
                   </div>
 
                   {/* Auto-calculation info */}

@@ -11,7 +11,14 @@ const config: CapacitorConfig = {
       keystoreAlias: undefined,
       releaseType: 'AAB'
     }
-  }
+  },
+  plugins: {
+    LocalNotifications: {
+      smallIcon: "ic_stat_icon_config_sample",
+      iconColor: "#EC4899",
+      sound: "beep.wav",
+    },
+  },
 };
 
 export default config;

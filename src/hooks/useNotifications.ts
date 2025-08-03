@@ -1,35 +1,26 @@
 import { useEffect, useState } from 'react';
-import { NotificationService } from '../services/notificationService';
+import { MobileNotificationService } from '../services/mobileNotificationService';
 import { useAuth } from '../context/AuthContext';
 import { Profile } from '../types';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from './use-toast';
 
-export const useNotifications = (profile: Profile ) => {
+export const useNotifications = (profile: Profile | null) => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [notificationsEnabled, setNotificationsEnabled] = useState(boolean);
-  const [showPopup, setShowPopup] = useState();
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
   const [popupData, setPopupData] = useState({ title: '', message: '' });
-  const [notificationStats, setNotificationStats] = useState({ scheduled: 0, snoozed: 0, permission: 'default', enabled: false });
-  const notificationService = NotificationService.getInstance();
+  const notificationService = MobileNotificationService.getInstance();
 
   useEffect(() => {
     // Check current permission status
-    if ('Notification' in window) {
+    const checkPermission = async () => {
       const settings = notificationService.getSettings();
-      setNotificationsEnabled(Notification.permission === 'granted' && settings.enabled);
-      setNotificationStats(notificationService.getNotificationStats());
-    }
-  }, []);
-
-  useEffect(() => {
-    // Update stats periodically
-    const interval = setInterval(() => {
-      setNotificationStats(notificationService.getNotificationStats());
-    }, 30000); // Update every 30 seconds
-
-    return () => clearInterval(interval);
+      const hasPermission = await notificationService.requestPermission();
+      setNotificationsEnabled(hasPermission && settings.enabled);
+    };
+    checkPermission();
   }, []);
 
   useEffect(() => {
@@ -74,24 +65,14 @@ export const useNotifications = (profile: Profile ) => {
         title: "Notification Snoozed",
         description: "You'll be reminded again in 24 hours.",
       });
-      setNotificationStats(notificationService.getNotificationStats());
-    };
-
-    // Listen for navigation events from notifications
-    const handleNavigateToScreen = (event: CustomEvent) => {
-      const { screen } = event.detail;
-      // This could be handled by the main app context
-      window.dispatchEvent(new CustomEvent('change-screen', { detail: { screen } }));
     };
 
     window.addEventListener('period-auto-calculated', handleAutoCalculation);
     window.addEventListener('notification-snoozed', handleNotificationSnoozed);
-    window.addEventListener('navigate-to-screen', handleNavigateToScreen);
 
     return () => {
       window.removeEventListener('period-auto-calculated', handleAutoCalculation);
       window.removeEventListener('notification-snoozed', handleNotificationSnoozed);
-      window.removeEventListener('navigate-to-screen', handleNavigateToScreen);
     };
   }, [user, toast]);
 
@@ -101,10 +82,9 @@ export const useNotifications = (profile: Profile ) => {
     if (granted) {
       notificationService.enableNotifications(daysBefore);
       setNotificationsEnabled(true);
-      setNotificationStats(notificationService.getNotificationStats());
       
       if (profile && profile.last_period_date && profile.cycle_length) {
-        notificationService.schedulePeriodicCheck(profile.last_period_date, profile.cycle_length);
+        await notificationService.schedulePeriodicCheck(profile.last_period_date, profile.cycle_length);
       }
       
       toast({
@@ -114,7 +94,7 @@ export const useNotifications = (profile: Profile ) => {
     } else {
       toast({
         title: "Notifications Blocked",
-        description: "Please enable notifications in your browser settings to receive period reminders.",
+        description: "Please enable notifications in your device settings to receive period reminders.",
         variant: "destructive",
       });
     }
@@ -125,28 +105,10 @@ export const useNotifications = (profile: Profile ) => {
   const disableNotifications = (): void => {
     notificationService.disableNotifications();
     setNotificationsEnabled(false);
-    setNotificationStats(notificationService.getNotificationStats());
     toast({
       title: "Notifications Disabled",
       description: "You won't receive period reminders anymore.",
     });
-  };
-
-  const sendTestNotification = (): boolean => {
-    const success = notificationService.sendTestNotification();
-    if (success) {
-      toast({
-        title: "Test Notification Sent",
-        description: "Check if you received the test notification!",
-      });
-    } else {
-      toast({
-        title: "Test Failed",
-        description: "Please enable notifications first.",
-        variant: "destructive",
-      });
-    }
-    return success;
   };
 
   const showNotificationPopup = (title: string, message: string): void => {
@@ -157,7 +119,6 @@ export const useNotifications = (profile: Profile ) => {
   const snoozePopup = (): void => {
     notificationService.snoozeNotification('period-reminder');
     setShowPopup(false);
-    setNotificationStats(notificationService.getNotificationStats());
   };
 
   const dismissPopup = (): void => {
@@ -166,20 +127,18 @@ export const useNotifications = (profile: Profile ) => {
 
   const getSettings = () => notificationService.getSettings();
   
-  const updateSettings = (settings: any) => {
+  const updateSettings = async (settings: any) => {
     notificationService.updateSettings(settings);
-    setNotificationStats(notificationService.getNotificationStats());
     if (settings.enabled !== undefined) {
-      setNotificationsEnabled(settings.enabled && Notification.permission === 'granted');
+      const hasPermission = await notificationService.requestPermission();
+      setNotificationsEnabled(settings.enabled && hasPermission);
     }
   };
 
   return {
     notificationsEnabled,
-    notificationStats,
     enableNotifications,
     disableNotifications,
-    sendTestNotification,
     showPopup,
     popupData,
     showNotificationPopup,
