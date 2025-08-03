@@ -13,6 +13,26 @@ export const useNotifications = (profile: Profile | null) => {
   const [popupData, setPopupData] = useState({ title: '', message: '' });
   const notificationService = MobileNotificationService.getInstance();
 
+  const debugNotifications = async () => {
+    console.log('=== NOTIFICATION DEBUG START ===');
+    
+    // Check what platform we're on
+    console.log('User agent:', navigator.userAgent);
+    console.log('Is mobile:', /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
+    
+    // Check browser support
+    console.log('Notification in window:', 'Notification' in window);
+    if ('Notification' in window) {
+      console.log('Current permission:', Notification.permission);
+    }
+    
+    // Check service settings
+    const settings = notificationService.getSettings();
+    console.log('Service enabled:', settings.enabled);
+    console.log('Days before:', settings.daysBefore);
+    
+    console.log('=== NOTIFICATION DEBUG END ===');
+  };
   useEffect(() => {
     // Check current permission status
     const checkPermission = async () => {
@@ -145,6 +165,7 @@ export const useNotifications = (profile: Profile | null) => {
     snoozePopup,
     dismissPopup,
     getSettings,
-    updateSettings
+    updateSettings,
+    debugNotifications
   };
 };
