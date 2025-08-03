@@ -18,7 +18,8 @@ export const useNotifications = (profile: Profile | null) => {
     const checkPermission = async () => {
       const settings = notificationService.getSettings();
       const hasPermission = await notificationService.requestPermission();
-      setNotificationsEnabled(hasPermission && settings.enabled);
+      const enabled = hasPermission && settings.enabled !== false;
+      setNotificationsEnabled(enabled);
     };
     checkPermission();
   }, []);
@@ -81,7 +82,9 @@ export const useNotifications = (profile: Profile | null) => {
     
     if (granted) {
       notificationService.enableNotifications(daysBefore);
+      notificationService.updateSettings({ enabled: true }); // 👈 add this
       setNotificationsEnabled(true);
+
       
       if (profile && profile.last_period_date && profile.cycle_length) {
         await notificationService.schedulePeriodicCheck(profile.last_period_date, profile.cycle_length);
