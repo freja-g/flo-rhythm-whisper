@@ -5,7 +5,7 @@ import { Profile } from '../types';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from './use-toast';
 
-export const useNotifications = (profile: Profile |) => {
+export const useNotifications = (profile: Profile ) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [notificationsEnabled, setNotificationsEnabled] = useState();
