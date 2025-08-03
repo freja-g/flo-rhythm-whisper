@@ -95,23 +95,22 @@ export const useNotifications = (profile: Profile ) => {
     };
   }, [user, toast]);
 
-  const enableNotifications = async (daysBefore = 5): Promise<boolean> => {
+  const enableNotifications = async (daysBefore: number = 5): Promise<boolean> => {
     const granted = await notificationService.requestPermission();
     
     if (granted) {
-      await notificationService.enableNotifications(daysBefore);
+      notificationService.enableNotifications(daysBefore);
       setNotificationsEnabled(true);
       setNotificationStats(notificationService.getNotificationStats());
       
       if (profile && profile.last_period_date && profile.cycle_length) {
-        await notificationService.schedulePeriodicCheck(profile.last_period_date, profile.cycle_length);
+        notificationService.schedulePeriodicCheck(profile.last_period_date, profile.cycle_length);
       }
       
       toast({
         title: "Notifications Enabled",
         description: `You'll receive period reminders ${daysBefore} days before your expected date.`,
       });
-      return true;
     } else {
       toast({
         title: "Notifications Blocked",
