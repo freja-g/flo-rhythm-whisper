@@ -56,34 +56,22 @@ export class MobileNotificationService {
     localStorage.setItem('notification-settings', JSON.stringify(this.settings));
   }
 
-  async requestPermission(): Promise<boolean> {
-    if (Capacitor.isNativePlatform()) {
-      try {
-        const permission = await LocalNotifications.requestPermissions();
-        return permission.display === 'granted';
-      } catch (error) {
-        console.error('Error requesting permission on mobile:', error);
-        return false;
-      }
-    } else {
-      // Browser notification logic
-      if (!('Notification' in window)) {
-        console.log('This browser does not support notifications');
-        return false;
-      }
-
-      if (Notification.permission === 'granted') {
-        return true;
-      }
-
-      if (Notification.permission === 'denied') {
-        return false;
-      }
-
-      const permission = await Notification.requestPermission();
-      return permission === 'granted';
+async requestPermission(): Promise<boolean> {
+  if (Capacitor.isNativePlatform()) {
+    try {
+      const permission = await LocalNotifications.requestPermissions();
+      return permission.display === 'granted';
+    } catch (err) {
+      console.error("Native permission request failed:", err);
+      return false;
     }
+  } else if ('Notification' in window) {
+    const permission = await Notification.requestPermission();
+    return permission === 'granted';
   }
+
+  return false;
+}
 
   enableNotifications(daysBefore: number = 5): boolean {
     this.settings.enabled = true;
