@@ -34,6 +34,17 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const [chatMessages, setChatMessages] = useLocalStorage<ChatMessage[]>('chatMessages', []);
   const [currentScreen, setCurrentScreen] = useLocalStorage<string>('currentScreen', 'splash');
 
+  // Listen for screen change events from notifications
+  React.useEffect(() => {
+    const handleScreenChange = (event: CustomEvent) => {
+      const { screen } = event.detail;
+      setCurrentScreen(screen);
+    };
+
+    window.addEventListener('change-screen', handleScreenChange);
+    return () => window.removeEventListener('change-screen', handleScreenChange);
+  }, [setCurrentScreen]);
+
   return (
     <AppContext.Provider value={{
       symptoms,

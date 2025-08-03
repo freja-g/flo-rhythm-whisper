@@ -4,6 +4,9 @@ interface NotificationSettings {
   enabled: boolean;
   daysBefore: number;
   snoozeDuration: number; // in hours
+  reminderTime: string; // HH:MM format
+  weeklyReminder: boolean;
+  ovulationReminder: boolean;
 }
 
 interface SnoozedNotification {
@@ -11,16 +14,33 @@ interface SnoozedNotification {
   snoozeUntil: string;
 }
 
+interface ScheduledNotification {
+  id: string;
+  type: string;
+  title: string;
+  body: string;
+  scheduledFor: string;
+  userId?: string;
+}
+
 export class NotificationService {
   private static instance: NotificationService;
   private settings: NotificationSettings = {
     enabled: false,
     daysBefore: 5,
-    snoozeDuration: 24
+    snoozeDuration: 24,
+    reminderTime: '09:00',
+    weeklyReminder: true,
+    ovulationReminder: false
   };
+  
+  private scheduledNotifications: ScheduledNotification[] = [];
+  private checkInterval: number | null = null;
   
   private constructor() {
     this.loadSettings();
+    this.loadScheduledNotifications();
+    this.startPeriodicCheck();
   }
   
   static getInstance(): NotificationService {
@@ -39,6 +59,21 @@ export class NotificationService {
 
   private saveSettings() {
     localStorage.setItem('notification-settings', JSON.stringify(this.settings));
+  }
+
+  private loadScheduledNotifications() {
+    const stored = localStorage.getItem('scheduled-notifications');
+    if (stored) {
+      try {
+        this.scheduledNotifications = JSON.parse(stored);
+      } catch {
+        this.scheduledNotifications = [];
+      }
+    }
+  }
+
+  private saveScheduledNotifications() {
+    localStorage.setItem('scheduled-notifications', JSON.stringify(this.scheduledNotifications));
   }
 
   async requestPermission(): Promise<boolean> {
@@ -63,12 +98,15 @@ export class NotificationService {
     this.settings.enabled = true;
     this.settings.daysBefore = daysBefore;
     this.saveSettings();
+    this.startPeriodicCheck();
     return true;
   }
 
   disableNotifications(): void {
     this.settings.enabled = false;
     this.saveSettings();
+    this.stopPeriodicCheck();
+    this.clearAllScheduledNotifications();
   }
 
   getSettings(): NotificationSettings {
@@ -78,6 +116,12 @@ export class NotificationService {
   updateSettings(newSettings: Partial<NotificationSettings>): void {
     this.settings = { ...this.settings, ...newSettings };
     this.saveSettings();
+    
+    // Restart periodic check if settings changed
+    if (this.settings.enabled) {
+      this.stopPeriodicCheck();
+      this.startPeriodicCheck();
+    }
   }
 
   private isNotificationSnoozed(type: string): boolean {
@@ -145,30 +189,57 @@ export class NotificationService {
     }
   }
 
-  sendNotification(title: string, options?: NotificationOptions & { canSnooze?: boolean }): void {
+  sendNotification(title: string, options?: NotificationOptions & { canSnooze?: boolean }): Notification | null {
     if (!this.settings.enabled || Notification.permission !== 'granted') {
-      return;
+      return null;
     }
 
     const notification = new Notification(title, {
       icon: '/favicon.png',
       badge: '/favicon.png',
+      requireInteraction: true,
       ...options
     });
 
-    // Add click handler for snoozing
-    if (options?.canSnooze) {
-      notification.onclick = () => {
-        this.snoozeNotification(options.tag || 'period-reminder');
+    // Add click handler
+    notification.onclick = () => {
+      window.focus();
+      notification.close();
+      
+      // Navigate to relevant screen if needed
+      if (options?.tag?.includes('period')) {
+        window.dispatchEvent(new CustomEvent('navigate-to-screen', { detail: { screen: 'cycles' } }));
+      }
+    };
+
+    // Auto-close after 10 seconds if not requiring interaction
+    if (!options?.requireInteraction) {
+      setTimeout(() => {
         notification.close();
-      };
+      }, 10000);
     }
+
+    return notification;
   }
 
   snoozeNotification(type: string): void {
     this.addSnoozedNotification(type);
     // Dispatch custom event for UI updates
     window.dispatchEvent(new CustomEvent('notification-snoozed', { detail: { type } }));
+  }
+
+  private scheduleNotification(notification: ScheduledNotification): void {
+    // Remove existing notification of same type
+    this.scheduledNotifications = this.scheduledNotifications.filter(n => n.type !== notification.type);
+    
+    // Add new notification
+    this.scheduledNotifications.push(notification);
+    this.saveScheduledNotifications();
+  }
+
+  private clearAllScheduledNotifications(): void {
+    this.scheduledNotifications = [];
+    this.saveScheduledNotifications();
   }
 
   checkPeriodReminder(lastPeriodDate: string, cycleLength: number): void {
@@ -201,7 +272,8 @@ export class NotificationService {
         this.sendNotification('Period Tomorrow 🌸', {
           body: 'Your period is expected to start tomorrow. Make sure you\'re prepared!',
           tag: notificationType,
-          canSnooze: true
+          canSnooze: true,
+          requireInteraction: true
         });
       }
     }
@@ -215,24 +287,26 @@ export class NotificationService {
           body: 'Your period is expected to start today. Don\'t forget to log it and track your symptoms!',
           tag: notificationType,
           canSnooze: true,
-          requireInteraction: true // Keep notification visible until user interacts
+          requireInteraction: true
         });
       }
+    }
+
+    // Check for ovulation reminder (if enabled)
+    if (this.settings.ovulationReminder) {
+      const ovulationDay = Math.floor(cycleLength / 2); // Approximate ovulation
+      const daysSinceLastPeriod = getDaysBetween(lastPeriod, today);
       
-      // Send a follow-up reminder in the evening if not snoozed
-      const eveningReminderType = 'period-reminder-today-evening';
-      const now = new Date();
-      
-      if (now.getHours() >= 18 && !this.isNotificationSnoozed(eveningReminderType)) {
-        setTimeout(() => {
-          if (!this.isNotificationSnoozed(eveningReminderType)) {
-            this.sendNotification('Period Tracking Reminder 🌸', {
-              body: 'Did you start your period today? Don\'t forget to log it in the app!',
-              tag: eveningReminderType,
-              canSnooze: true
-            });
-          }
-        }, 2 * 60 * 60 * 1000); // 2 hours delay
+      if (daysSinceLastPeriod === ovulationDay) {
+        const notificationType = 'ovulation-reminder';
+        
+        if (!this.isNotificationSnoozed(notificationType)) {
+          this.sendNotification('Ovulation Window 🥚', {
+            body: 'You may be in your fertile window. Track your symptoms for better insights!',
+            tag: notificationType,
+            canSnooze: true
+          });
+        }
       }
     }
   }
@@ -264,6 +338,50 @@ export class NotificationService {
     return { shouldUpdate: false, newDate: lastPeriodDate };
   }
 
+  private startPeriodicCheck(): void {
+    if (this.checkInterval) {
+      clearInterval(this.checkInterval);
+    }
+
+    // Check every hour
+    this.checkInterval = window.setInterval(() => {
+      this.processScheduledNotifications();
+    }, 60 * 60 * 1000);
+
+    // Also check immediately
+    this.processScheduledNotifications();
+  }
+
+  private stopPeriodicCheck(): void {
+    if (this.checkInterval) {
+      clearInterval(this.checkInterval);
+      this.checkInterval = null;
+    }
+  }
+
+  private processScheduledNotifications(): void {
+    const now = new Date();
+    const [hours, minutes] = this.settings.reminderTime.split(':').map(Number);
+    
+    // Check if it's the right time for notifications
+    if (now.getHours() === hours && now.getMinutes() >= minutes && now.getMinutes() < minutes + 60) {
+      // Process any scheduled notifications for today
+      const today = now.toISOString().split('T')[0];
+      
+      this.scheduledNotifications.forEach(notification => {
+        const scheduledDate = new Date(notification.scheduledFor).toISOString().split('T')[0];
+        
+        if (scheduledDate === today && !this.isNotificationSnoozed(notification.type)) {
+          this.sendNotification(notification.title, {
+            body: notification.body,
+            tag: notification.type,
+            canSnooze: true
+          });
+        }
+      });
+    }
+  }
+
   schedulePeriodicCheck(lastPeriodDate: string, cycleLength: number): void {
     // Check for auto-calculation first
     const autoCalc = this.autoCalculateMissedPeriods(lastPeriodDate, cycleLength);
@@ -276,34 +394,116 @@ export class NotificationService {
       }));
     }
     
-    // Check immediately
-    this.checkPeriodReminder(effectiveLastPeriodDate, cycleLength);
+    // Schedule upcoming notifications
+    this.scheduleUpcomingNotifications(effectiveLastPeriodDate, cycleLength);
     
-    // Set up daily check at 9 AM
-    const now = new Date();
-    const next9AM = new Date();
-    next9AM.setHours(9, 0, 0, 0);
+    // Start the periodic check system
+    this.startPeriodicCheck();
+  }
+
+  private scheduleUpcomingNotifications(lastPeriodDate: string, cycleLength: number): void {
+    const lastPeriod = new Date(lastPeriodDate);
+    const nextPeriodDate = addDays(lastPeriod, cycleLength);
     
-    // If it's past 9 AM today, schedule for tomorrow
-    if (now > next9AM) {
-      next9AM.setDate(next9AM.getDate() + 1);
+    // Clear existing scheduled notifications
+    this.clearAllScheduledNotifications();
+    
+    // Schedule period reminder
+    const reminderDate = addDays(nextPeriodDate, -this.settings.daysBefore);
+    this.scheduleNotification({
+      id: `period-reminder-${this.settings.daysBefore}`,
+      type: `period-reminder-${this.settings.daysBefore}days`,
+      title: 'Period Reminder 🌸',
+      body: `Your period is expected to start in ${this.settings.daysBefore} days. Don't forget to prepare!`,
+      scheduledFor: reminderDate.toISOString()
+    });
+    
+    // Schedule tomorrow reminder
+    const tomorrowDate = addDays(nextPeriodDate, -1);
+    this.scheduleNotification({
+      id: 'period-reminder-tomorrow',
+      type: 'period-reminder-1day',
+      title: 'Period Tomorrow 🌸',
+      body: 'Your period is expected to start tomorrow. Make sure you\'re prepared!',
+      scheduledFor: tomorrowDate.toISOString()
+    });
+    
+    // Schedule today reminder
+    this.scheduleNotification({
+      id: 'period-reminder-today',
+      type: 'period-reminder-today',
+      title: '🩸 Period Day is Here! 🌸',
+      body: 'Your period is expected to start today. Don\'t forget to log it and track your symptoms!',
+      scheduledFor: nextPeriodDate.toISOString()
+    });
+
+    // Schedule ovulation reminder if enabled
+    if (this.settings.ovulationReminder) {
+      const ovulationDate = addDays(lastPeriod, Math.floor(cycleLength / 2));
+      if (ovulationDate > new Date()) {
+        this.scheduleNotification({
+          id: 'ovulation-reminder',
+          type: 'ovulation-reminder',
+          title: 'Ovulation Window 🥚',
+          body: 'You may be in your fertile window. Track your symptoms for better insights!',
+          scheduledFor: ovulationDate.toISOString()
+        });
+      }
     }
+
+    // Schedule weekly reminder if enabled
+    if (this.settings.weeklyReminder) {
+      const nextWeek = new Date();
+      nextWeek.setDate(nextWeek.getDate() + 7);
+      
+      this.scheduleNotification({
+        id: 'weekly-reminder',
+        type: 'weekly-reminder',
+        title: 'Weekly Check-in 📝',
+        body: 'Don\'t forget to log your symptoms and track your wellness this week!',
+        scheduledFor: nextWeek.toISOString()
+      });
+    }
+  }
+
+  // Method to send test notification
+  sendTestNotification(): boolean {
+    if (Notification.permission !== 'granted') {
+      return false;
+    }
+
+    this.sendNotification('Test Notification 🌸', {
+      body: 'This is a test notification from FloMentor. Your notifications are working!',
+      tag: 'test-notification'
+    });
+
+    return true;
+  }
+
+  // Get notification statistics
+  getNotificationStats(): { 
+    scheduled: number; 
+    snoozed: number; 
+    permission: string;
+    enabled: boolean;
+  } {
+    const snoozed = localStorage.getItem('snoozed-notifications');
+    let snoozedCount = 0;
     
-    const timeUntil9AM = next9AM.getTime() - now.getTime();
-    
-    setTimeout(() => {
-      this.checkPeriodReminder(effectiveLastPeriodDate, cycleLength);
-      // Then check every 24 hours
-      setInterval(() => {
-        const latestAutoCalc = this.autoCalculateMissedPeriods(effectiveLastPeriodDate, cycleLength);
-        if (latestAutoCalc.shouldUpdate) {
-          effectiveLastPeriodDate = latestAutoCalc.newDate;
-          window.dispatchEvent(new CustomEvent('period-auto-calculated', { 
-            detail: { newDate: latestAutoCalc.newDate, originalDate: effectiveLastPeriodDate }
-          }));
-        }
-        this.checkPeriodReminder(effectiveLastPeriodDate, cycleLength);
-      }, 24 * 60 * 60 * 1000);
-    }, timeUntil9AM);
+    if (snoozed) {
+      try {
+        const snoozedData = JSON.parse(snoozed);
+        snoozedCount = snoozedData.length;
+      } catch {
+        snoozedCount = 0;
+      }
+    }
+
+    return {
+      scheduled: this.scheduledNotifications.length,
+      snoozed: snoozedCount,
+      permission: Notification.permission,
+      enabled: this.settings.enabled
+    };
   }
 }
