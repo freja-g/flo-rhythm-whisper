@@ -5,11 +5,11 @@ import { Profile } from '../types';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from './use-toast';
 
-export const useNotifications = (profile: Profile | null) => {
+export const useNotifications = (profile: Profile |) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [notificationsEnabled, setNotificationsEnabled] = useState();
-  const [showPopup, setShowPopup] = useState(false);
+  const [showPopup, setShowPopup] = useState();
   const [popupData, setPopupData] = useState({ title: '', message: '' });
   const [notificationStats, setNotificationStats] = useState({ scheduled: 0, snoozed: 0, permission: 'default', enabled: false });
   const notificationService = NotificationService.getInstance();
