@@ -57,6 +57,9 @@ export class MobileNotificationService {
   }
 
 async requestPermission(): Promise<boolean> {
+  const platform = Capacitor.getPlatform();
+  console.log("Capacitor platform:", platform); // ✅ This line shows 'web', 'android', or 'ios'
+
   if (Capacitor.isNativePlatform()) {
     try {
       const permission = await LocalNotifications.requestPermissions();
@@ -72,6 +75,7 @@ async requestPermission(): Promise<boolean> {
 
   return false;
 }
+
 
   enableNotifications(daysBefore: number = 5): boolean {
     this.settings.enabled = true;
