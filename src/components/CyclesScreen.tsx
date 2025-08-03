@@ -1,12 +1,11 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import { formatDate } from '../utils/dateUtils';
 import { useToast } from '@/hooks/use-toast';
 import { Cycle } from '../types';
 import { supabase } from '@/integrations/supabase/client';
-import { useOfflineData } from '../hooks/useOfflineData';
 
 const CyclesScreen: React.FC = () => {
   const { user } = useAuth();
@@ -16,25 +15,6 @@ const CyclesScreen: React.FC = () => {
   const [cycleLength, setCycleLength] = useState(28);
   const [periodLength, setPeriodLength] = useState(5);
   const { toast } = useToast();
-  const { saveCycleOffline, getCyclesOffline, saveProfileOffline, getProfileOffline } = useOfflineData();
-
-  // Load cycles from offline storage on component mount
-  useEffect(() => {
-    if (user) {
-      const offlineCycles = getCyclesOffline(user.id);
-      if (offlineCycles.length > 0) {
-        const localCycles = offlineCycles.map(cycle => ({
-          id: cycle.id,
-          userId: user.id,
-          startDate: cycle.start_date,
-          endDate: cycle.end_date || undefined,
-          length: cycle.cycle_length,
-          createdAt: cycle.created_at
-        }));
-        setCycles(localCycles);
-      }
-    }
-  }, [user, getCyclesOffline, setCycles]);
 
   const sortedCycles = cycles.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
 
@@ -50,41 +30,39 @@ const CyclesScreen: React.FC = () => {
 
     if (!user) return;
 
-    const newCycle = {
+    const newCycle: Cycle = {
       id: Date.now().toString(),
-      user_id: user.id,
-      start_date: startDate,
-      end_date: endDate || null,
-      cycle_length: cycleLength,
-      period_length: periodLength,
-      created_at: new Date().toISOString()
-    };
-
-    // Save to offline storage and database
-    saveCycleOffline(newCycle);
-
-    // Update local state for immediate UI update
-    const localCycle: Cycle = {
-      id: newCycle.id,
       userId: user.id,
       startDate,
       endDate: endDate || undefined,
       length: cycleLength,
       createdAt: new Date().toISOString()
     };
-    setCycles([...cycles, localCycle]);
 
-    // Update profile's last_period_date
-    const currentProfile = getProfileOffline(user.id);
-    if (currentProfile) {
-      const updatedProfile = {
-        ...currentProfile,
-        last_period_date: startDate
-      };
-      saveProfileOffline(updatedProfile);
-      
+    setCycles([...cycles, newCycle]);
+    
+    // Save to database
+    try {
+      await supabase
+        .from('cycles')
+        .insert({
+          user_id: user.id,
+          start_date: startDate,
+          end_date: endDate || null,
+          cycle_length: cycleLength,
+          period_length: periodLength,
+        });
+
+      // Update profile's last_period_date
+      await supabase
+        .from('profiles')
+        .update({ last_period_date: startDate })
+        .eq('id', user.id);
+
       // Trigger profile update event
       window.dispatchEvent(new CustomEvent('profile-updated'));
+    } catch (error) {
+      console.error('Error saving cycle:', error);
     }
     
     toast({

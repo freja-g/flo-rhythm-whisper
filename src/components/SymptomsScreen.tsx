@@ -1,37 +1,15 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import { formatDate } from '../utils/dateUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useOfflineData } from '../hooks/useOfflineData';
 
 const SymptomsScreen: React.FC = () => {
   const { user } = useAuth();
   const { symptoms, setSymptoms, setCurrentScreen } = useApp();
   const { toast } = useToast();
-  const { getSymptomsOffline, saveProfileOffline, getProfileOffline, getCyclesOffline } = useOfflineData();
-
-  // Load symptoms from offline storage on component mount
-  useEffect(() => {
-    if (user) {
-      const offlineSymptoms = getSymptomsOffline(user.id);
-      if (offlineSymptoms.length > 0) {
-        const localSymptoms = offlineSymptoms.map(symptom => ({
-          id: symptom.id,
-          userId: user.id,
-          date: symptom.date,
-          mood: symptom.mood,
-          symptoms: symptom.symptoms || [],
-          spotting: symptom.spotting,
-          menstrualFlow: symptom.menstrual_flow,
-          createdAt: symptom.created_at
-        }));
-        setSymptoms(localSymptoms);
-      }
-    }
-  }, [user, getSymptomsOffline, setSymptoms]);
 
   const sortedSymptoms = symptoms.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
@@ -68,30 +46,31 @@ const SymptomsScreen: React.FC = () => {
           .filter(s => s.menstrualFlow && s.menstrualFlow !== 'none')
           .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-        const currentProfile = getProfileOffline(user.id);
-        if (currentProfile) {
-          let updatedProfile = { ...currentProfile };
+        if (symptomsWithFlow.length > 0) {
+          // Update profile with the most recent period date
+          await supabase
+            .from('profiles')
+            .update({ last_period_date: symptomsWithFlow[0].date })
+            .eq('id', user.id);
+        } else {
+          // No symptoms with flow left, check if there are cycles we can use
+          const { data: cycles } = await supabase
+            .from('cycles')
+            .select('start_date')
+            .eq('user_id', user.id)
+            .order('start_date', { ascending: false })
+            .limit(1);
 
-          if (symptomsWithFlow.length > 0) {
-            // Update profile with the most recent period date
-            updatedProfile.last_period_date = symptomsWithFlow[0].date;
-          } else {
-            // No symptoms with flow left, check if there are cycles we can use
-            const offlineCycles = getCyclesOffline(user.id);
-            if (offlineCycles.length > 0) {
-              const sortedCycles = offlineCycles.sort((a, b) => 
-                new Date(b.start_date).getTime() - new Date(a.start_date).getTime()
-              );
-              updatedProfile.last_period_date = sortedCycles[0].start_date;
-            } else {
-              updatedProfile.last_period_date = null;
-            }
+          if (cycles && cycles.length > 0) {
+            await supabase
+              .from('profiles')
+              .update({ last_period_date: cycles[0].start_date })
+              .eq('id', user.id);
           }
-
-          saveProfileOffline(updatedProfile);
-          // Trigger profile update event
-          window.dispatchEvent(new CustomEvent('profile-updated'));
         }
+
+        // Trigger profile update event
+        window.dispatchEvent(new CustomEvent('profile-updated'));
       }
 
       toast({
