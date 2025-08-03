@@ -56,32 +56,62 @@ export class MobileNotificationService {
     localStorage.setItem('notification-settings', JSON.stringify(this.settings));
   }
 
-  async requestPermission(): Promise<boolean> {
+async requestPermission(): Promise<boolean> {
+    console.log('[NotificationService] Requesting permission...');
+    console.log('[NotificationService] Is native platform:', Capacitor.isNativePlatform());
+    console.log('[NotificationService] Platform:', Capacitor.getPlatform());
+    
     if (Capacitor.isNativePlatform()) {
       try {
+        // Check current permission status first
+        const currentStatus = await LocalNotifications.checkPermissions();
+        console.log('[NotificationService] Current mobile permissions:', currentStatus);
+        
+        if (currentStatus.display === 'granted') {
+          console.log('[NotificationService] Mobile permission already granted');
+          return true;
+        }
+        
+        if (currentStatus.display === 'denied') {
+          console.log('[NotificationService] Mobile permission denied');
+          return false;
+        }
+        
+        // Request permission
         const permission = await LocalNotifications.requestPermissions();
+        console.log('[NotificationService] Mobile permission request result:', permission);
         return permission.display === 'granted';
       } catch (error) {
-        console.error('Error requesting permission on mobile:', error);
+        console.error('[NotificationService] Error requesting mobile permission:', error);
         return false;
       }
     } else {
       // Browser notification logic
       if (!('Notification' in window)) {
-        console.log('This browser does not support notifications');
+        console.log('[NotificationService] This browser does not support notifications');
         return false;
       }
 
+      console.log('[NotificationService] Current browser permission:', Notification.permission);
+
       if (Notification.permission === 'granted') {
+        console.log('[NotificationService] Browser permission already granted');
         return true;
       }
 
       if (Notification.permission === 'denied') {
+        console.log('[NotificationService] Browser permission denied');
         return false;
       }
 
-      const permission = await Notification.requestPermission();
-      return permission === 'granted';
+      try {
+        const permission = await Notification.requestPermission();
+        console.log('[NotificationService] Browser permission result:', permission);
+        return permission === 'granted';
+      } catch (error) {
+        console.error('[NotificationService] Error requesting browser permission:', error);
+        return false;
+      }
     }
   }
 
@@ -203,7 +233,9 @@ export class MobileNotificationService {
 
   private sendBrowserNotification(title: string, options?: NotificationOptions & { canSnooze?: boolean }): void {
     if (Capacitor.isNativePlatform()) return;
-    
+    console.log('[NotificationService] Sending browser notification:', { title, options });
+    console.log('[NotificationService] Current browser permission:', Notification.permission);
+    console.log('[NotificationService] Settings enabled:', this.settings.enabled);
     if (!this.settings.enabled || Notification.permission !== 'granted') {
       return;
     }
@@ -223,7 +255,16 @@ export class MobileNotificationService {
     }
   }
 
-  async sendNotification(title: string, body: string, options?: { canSnooze?: boolean; tag?: string; schedule?: Date; id?: number }): Promise<void> {
+  async sendNotification(title: string, body: string, options?: {
+    console.log('[NotificationService] Attempting to send notification:', { title, body, options });
+    console.log('[NotificationService] Settings enabled:', this.settings.enabled);
+    console.log('[NotificationService] Is native platform:', Capacitor.isNativePlatform());
+    
+    if (!this.settings.enabled) {
+      console.log('[NotificationService] Notifications disabled in settings - aborting');
+      return;
+    }
+    canSnooze?: boolean; tag?: string; schedule?: Date; id?: number }): Promise<void> {
     if (!this.settings.enabled) return;
 
     if (Capacitor.isNativePlatform()) {
