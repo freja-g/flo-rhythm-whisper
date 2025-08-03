@@ -5,11 +5,13 @@ import { useAuth } from '../context/AuthContext';
 import { Symptom } from '../types';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useOfflineData } from '../hooks/useOfflineData';
 
 const LogScreen: React.FC = () => {
   const { user } = useAuth();
   const { symptoms, setSymptoms, setCurrentScreen } = useApp();
   const { toast } = useToast();
+  const { saveSymptomOffline, saveProfileOffline, getProfileOffline } = useOfflineData();
   const [selectedMood, setSelectedMood] = useState('');
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
   const [spotting, setSpotting] = useState<'none' | 'light' | 'heavy'>('none');
@@ -41,8 +43,23 @@ const LogScreen: React.FC = () => {
     if (!user) return;
 
     const currentDate = new Date().toISOString().split('T')[0];
-    const newSymptom: Symptom = {
+    const newSymptom = {
       id: Date.now().toString(),
+      user_id: user.id,
+      date: currentDate,
+      mood: selectedMood,
+      symptoms: selectedSymptoms,
+      spotting,
+      menstrual_flow: menstrualFlow,
+      created_at: new Date().toISOString()
+    };
+
+    // Save symptom to offline storage and database
+    saveSymptomOffline(newSymptom);
+
+    // Update local state for immediate UI update
+    const localSymptom: Symptom = {
+      id: newSymptom.id,
       userId: user.id,
       date: currentDate,
       mood: selectedMood,
@@ -51,46 +68,32 @@ const LogScreen: React.FC = () => {
       menstrualFlow,
       createdAt: new Date().toISOString()
     };
-
-    setSymptoms([...symptoms, newSymptom]);
+    setSymptoms([...symptoms, localSymptom]);
 
     // If user logged menstrual flow (not none), update the profile's last_period_date
     if (menstrualFlow !== 'none') {
-      try {
-        const { error } = await supabase
-          .from('profiles')
-          .update({ last_period_date: currentDate })
-          .eq('id', user.id);
-          
-        if (!error) {
-          toast({
-            title: "Period Date Updated",
-            description: "Your last period date has been updated based on your logged flow.",
-          });
-          
-          // Trigger profile update event to sync across components
-          window.dispatchEvent(new CustomEvent('profile-updated'));
-        }
-      } catch (error) {
-        console.error('Error updating period date:', error);
+      const currentProfile = getProfileOffline(user.id);
+      if (currentProfile) {
+        const updatedProfile = {
+          ...currentProfile,
+          last_period_date: currentDate
+        };
+        saveProfileOffline(updatedProfile);
+        
+        toast({
+          title: "Period Date Updated",
+          description: "Your last period date has been updated based on your logged flow.",
+        });
+        
+        // Trigger profile update event to sync across components
+        window.dispatchEvent(new CustomEvent('profile-updated'));
       }
     }
 
-    // Save symptom to database
-    try {
-      await supabase
-        .from('symptoms')
-        .insert({
-          user_id: user.id,
-          date: currentDate,
-          mood: selectedMood,
-          symptoms: selectedSymptoms,
-          spotting,
-          menstrual_flow: menstrualFlow,
-        });
-    } catch (error) {
-      console.error('Error saving symptom:', error);
-    }
+    toast({
+      title: "Success",
+      description: "Symptom logged successfully!"
+    });
 
     setCurrentScreen('dashboard');
   };
