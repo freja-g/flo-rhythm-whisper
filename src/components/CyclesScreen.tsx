@@ -5,7 +5,6 @@ import { useAuth } from '../context/AuthContext';
 import { formatDate } from '../utils/dateUtils';
 import { useToast } from '@/hooks/use-toast';
 import { Cycle } from '../types';
-import { supabase } from '@/integrations/supabase/client';
 
 const CyclesScreen: React.FC = () => {
   const { user } = useAuth();
@@ -18,7 +17,7 @@ const CyclesScreen: React.FC = () => {
 
   const sortedCycles = cycles.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
 
-  const handleSaveCycle = async () => {
+  const handleSaveCycle = () => {
     if (!startDate) {
       toast({
         title: "Error",
@@ -41,30 +40,6 @@ const CyclesScreen: React.FC = () => {
 
     setCycles([...cycles, newCycle]);
     
-    // Save to database
-    try {
-      await supabase
-        .from('cycles')
-        .insert({
-          user_id: user.id,
-          start_date: startDate,
-          end_date: endDate || null,
-          cycle_length: cycleLength,
-          period_length: periodLength,
-        });
-
-      // Update profile's last_period_date
-      await supabase
-        .from('profiles')
-        .update({ last_period_date: startDate })
-        .eq('id', user.id);
-
-      // Trigger profile update event
-      window.dispatchEvent(new CustomEvent('profile-updated'));
-    } catch (error) {
-      console.error('Error saving cycle:', error);
-    }
-    
     toast({
       title: "Success",
       description: "Cycle saved successfully!"
@@ -72,55 +47,6 @@ const CyclesScreen: React.FC = () => {
 
     setStartDate('');
     setEndDate('');
-  };
-
-  const handleDeleteCycle = async (cycleId: string, cycleDate: string) => {
-    if (!user) return;
-
-    // Remove from local state
-    const updatedCycles = cycles.filter(cycle => cycle.id !== cycleId);
-    setCycles(updatedCycles);
-
-    try {
-      // Delete from database (assuming we save cycles there)
-      await supabase
-        .from('cycles')
-        .delete()
-        .eq('id', cycleId);
-
-      // If this was the most recent cycle, update profile's last_period_date
-      if (updatedCycles.length > 0) {
-        const mostRecentCycle = updatedCycles.sort((a, b) => 
-          new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
-        )[0];
-        
-        await supabase
-          .from('profiles')
-          .update({ last_period_date: mostRecentCycle.startDate })
-          .eq('id', user.id);
-      } else {
-        // No cycles left, clear the last_period_date
-        await supabase
-          .from('profiles')
-          .update({ last_period_date: null })
-          .eq('id', user.id);
-      }
-
-      // Trigger profile update event
-      window.dispatchEvent(new CustomEvent('profile-updated'));
-
-      toast({
-        title: "Success",
-        description: "Cycle deleted successfully"
-      });
-    } catch (error) {
-      console.error('Error deleting cycle:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete cycle",
-        variant: "destructive"
-      });
-    }
   };
 
   const calculateNextPeriod = () => {
@@ -206,22 +132,13 @@ const CyclesScreen: React.FC = () => {
                           {formatDate(cycle.startDate)} {cycle.endDate && `- ${formatDate(cycle.endDate)}`}
                         </p>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          index === 0 
-                            ? 'bg-purple-100 text-purple-800' 
-                            : 'bg-gray-100 text-gray-800'
-                        }`}>
-                          {index === 0 ? 'Latest' : 'Completed'}
-                        </span>
-                        <button
-                          onClick={() => handleDeleteCycle(cycle.id, cycle.startDate)}
-                          className="text-red-500 hover:text-red-700 text-sm px-2 py-1 rounded hover:bg-red-50"
-                          title="Delete cycle"
-                        >
-                          🗑️
-                        </button>
-                      </div>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        index === 0 
+                          ? 'bg-purple-100 text-purple-800' 
+                          : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {index === 0 ? 'Latest' : 'Completed'}
+                      </span>
                     </div>
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
