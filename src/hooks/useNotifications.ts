@@ -8,7 +8,7 @@ import { useToast } from './use-toast';
 export const useNotifications = (profile: Profile | null) => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [notificationsEnabled, setNotificationsEnabled] = useState();
   const [showPopup, setShowPopup] = useState(false);
   const [popupData, setPopupData] = useState({ title: '', message: '' });
   const [notificationStats, setNotificationStats] = useState({ scheduled: 0, snoozed: 0, permission: 'default', enabled: false });
