@@ -41,34 +41,22 @@ export class NotificationService {
     localStorage.setItem('notification-settings', JSON.stringify(this.settings));
   }
 
-async requestPermission(): Promise<boolean> {
-    console.log('[BrowserNotificationService] Requesting permission...');
-    
+  async requestPermission(): Promise<boolean> {
     if (!('Notification' in window)) {
-      console.log('[BrowserNotificationService] This browser does not support notifications');
+      console.log('This browser does not support notifications');
       return false;
     }
 
-    console.log('[BrowserNotificationService] Current permission:', Notification.permission);
-
     if (Notification.permission === 'granted') {
-      console.log('[BrowserNotificationService] Permission already granted');
       return true;
     }
 
     if (Notification.permission === 'denied') {
-      console.log('[BrowserNotificationService] Permission denied');
       return false;
     }
 
-    try {
-      const permission = await Notification.requestPermission();
-      console.log('[BrowserNotificationService] Permission result:', permission);
-      return permission === 'granted';
-    } catch (error) {
-      console.error('[BrowserNotificationService] Error requesting permission:', error);
-      return false;
-    }
+    const permission = await Notification.requestPermission();
+    return permission === 'granted';
   }
 
   enableNotifications(daysBefore: number = 5): boolean {
@@ -157,11 +145,7 @@ async requestPermission(): Promise<boolean> {
     }
   }
 
-  sendNotification(title: string, options?: NotificationOptions & { 
-    canSnooze?: boolean }): void {
-    console.log('[BrowserNotificationService] Attempting to send notification:', { title, options });
-    console.log('[BrowserNotificationService] Settings enabled:', this.settings.enabled);
-    console.log('[BrowserNotificationService] Browser permission:', Notification.permission);
+  sendNotification(title: string, options?: NotificationOptions & { canSnooze?: boolean }): void {
     if (!this.settings.enabled || Notification.permission !== 'granted') {
       return;
     }
