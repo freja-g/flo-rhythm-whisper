@@ -18,8 +18,7 @@ export const useNotifications = (profile: Profile | null) => {
     const checkPermission = async () => {
       const settings = notificationService.getSettings();
       const hasPermission = await notificationService.requestPermission();
-      const enabled = hasPermission && settings.enabled !== false;
-      setNotificationsEnabled(enabled);
+      setNotificationsEnabled(hasPermission && settings.enabled !== false);
     };
     checkPermission();
   }, []);
