@@ -78,6 +78,8 @@ export type Database = {
           name: string
           period_length: number | null
           profile_photo: string | null
+          role: string | null
+          updated_at: string | null
         }
         Insert: {
           created_at?: string | null
@@ -88,6 +90,8 @@ export type Database = {
           name: string
           period_length?: number | null
           profile_photo?: string | null
+          role?: string | null
+          updated_at?: string | null
         }
         Update: {
           created_at?: string | null
@@ -98,6 +102,8 @@ export type Database = {
           name?: string
           period_length?: number | null
           profile_photo?: string | null
+          role?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
