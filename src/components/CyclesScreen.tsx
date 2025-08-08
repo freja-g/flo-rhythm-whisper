@@ -53,10 +53,15 @@ const CyclesScreen: React.FC = () => {
           period_length: periodLength,
         });
 
-      // Update profile's last_period_date
+      // Update profile's last_period_date to always be the latest
+      const allUserCycles = [...cycles, newCycle];
+      const latestCycle = allUserCycles
+        .filter(c => c.userId === user.id)
+        .sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime())[0];
+      
       await supabase
         .from('profiles')
-        .update({ last_period_date: startDate })
+        .update({ last_period_date: latestCycle.startDate })
         .eq('id', user.id);
 
       // Trigger profile update event
