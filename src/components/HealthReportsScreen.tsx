@@ -7,7 +7,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 
 const HealthReportsScreen: React.FC = () => {
-  const { cycles, setCurrentScreen } = useApp();
+  const { cycles, symptoms, setCurrentScreen } = useApp();
   const { user } = useAuth();
   const [trendData, setTrendData] = useState<any[]>([]);
   const [averageStats, setAverageStats] = useState({
@@ -26,6 +26,21 @@ const HealthReportsScreen: React.FC = () => {
       calculateStats();
     }
   }, [cycles]);
+
+  // SEO: title and meta description
+  useEffect(() => {
+    document.title = 'Health Reports: Expert Analysis';
+    const desc = 'Expert menstrual health insights, trends, and specialist contact.';
+    const metaDesc = document.querySelector('meta[name="description"]') as HTMLMetaElement | null;
+    if (metaDesc) {
+      metaDesc.setAttribute('content', desc);
+    } else {
+      const m = document.createElement('meta');
+      m.name = 'description';
+      m.content = desc;
+      document.head.appendChild(m);
+    }
+  }, []);
 
   const calculateTrends = () => {
     const trends = sortedCycles.map((cycle, index) => {
@@ -172,6 +187,93 @@ const HealthReportsScreen: React.FC = () => {
 
   const insights = getHealthInsights();
 
+  // Advanced statistics for expert analysis
+  const consecutiveCycleLengths: number[] = [];
+  for (let i = 0; i < sortedCycles.length - 1; i++) {
+    consecutiveCycleLengths.push(
+      getDaysBetween(sortedCycles[i].startDate, sortedCycles[i + 1].startDate)
+    );
+  }
+
+  const sortedLengths = [...consecutiveCycleLengths].sort((a, b) => a - b);
+  const shortestCycle = sortedLengths.length ? sortedLengths[0] : 0;
+  const longestCycle = sortedLengths.length ? sortedLengths[sortedLengths.length - 1] : 0;
+  const medianCycleLength = sortedLengths.length
+    ? (sortedLengths.length % 2 === 1
+        ? sortedLengths[(sortedLengths.length - 1) / 2]
+        : (sortedLengths[sortedLengths.length / 2 - 1] + sortedLengths[sortedLengths.length / 2]) / 2)
+    : 0;
+
+  const absDeviations = consecutiveCycleLengths.map((l) => Math.abs(l - medianCycleLength));
+  const sortedAbsDev = absDeviations.sort((a, b) => a - b);
+  const mad = sortedAbsDev.length
+    ? (sortedAbsDev.length % 2 === 1
+        ? sortedAbsDev[(sortedAbsDev.length - 1) / 2]
+        : (sortedAbsDev[sortedAbsDev.length / 2 - 1] + sortedAbsDev[sortedAbsDev.length / 2]) / 2)
+    : 0;
+
+  const coefVar = averageStats.avgCycleLength
+    ? (averageStats.cycleVariability / averageStats.avgCycleLength) * 100
+    : 0;
+
+  // Prediction based on last cycle start and average length
+  const lastStart = sortedCycles[sortedCycles.length - 1]?.startDate;
+  const predictedNextDate = lastStart
+    ? new Date(new Date(lastStart).getTime() + averageStats.avgCycleLength * 24 * 60 * 60 * 1000)
+    : null;
+  const daysUntilNext = predictedNextDate ? getDaysBetween(new Date(), predictedNextDate) : null;
+
+  // Symptom patterns
+  const userSymptoms = (symptoms || []).filter((s) => s.userId === user?.id);
+  const symptomCounts: Record<string, number> = {};
+  userSymptoms.forEach((s) => {
+    (s.symptoms || []).forEach((name) => {
+      symptomCounts[name] = (symptomCounts[name] || 0) + 1;
+    });
+  });
+  const topSymptoms = Object.entries(symptomCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3);
+
+  const moodCounts: Record<string, number> = {};
+  userSymptoms.forEach((s) => {
+    if (s.mood) moodCounts[s.mood] = (moodCounts[s.mood] || 0) + 1;
+  });
+
+  // Anomaly detection
+  const anomalies: string[] = [];
+  consecutiveCycleLengths.forEach((len, idx) => {
+    if (len < 21 || len > 35) anomalies.push(`Cycle ${idx + 1}→${idx + 2}: length ${len} days`);
+  });
+  const longPeriods = sortedCycles.filter((c) => c.length > 7).length;
+  if (longPeriods > 0) anomalies.push(`${longPeriods} cycle(s) with period length > 7 days`);
+  if (consecutiveCycleLengths.some((len) => len >= 90)) anomalies.push('One or more cycles ≥ 90 days');
+
+  const report = [
+    'Health Report Summary',
+    `Average cycle length: ${averageStats.avgCycleLength} days`,
+    `Average period length: ${averageStats.avgPeriodLength} days`,
+    `Variability (SD): ${averageStats.cycleVariability} days (CV ${coefVar.toFixed(1)}%)`,
+    `Median cycle length: ${Math.round(medianCycleLength * 10) / 10} days` ,
+    `Shortest/Longest: ${shortestCycle}/${longestCycle} days`,
+    predictedNextDate ? `Predicted next start: ${formatDate(predictedNextDate)} (${daysUntilNext} days)` : '',
+    anomalies.length ? `Anomalies: ${anomalies.join('; ')}` : 'Anomalies: none',
+    topSymptoms.length ? `Top symptoms: ${topSymptoms.map(([n, c]) => `${n} (${c})`).join(', ')}` : '',
+  ]
+    .filter(Boolean)
+    .join('\n');
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: 'Health Reports - Expert Analysis',
+    description: 'Expert analysis of menstrual cycle trends and health insights.',
+    author: user?.email || 'user',
+    datePublished: new Date().toISOString(),
+    articleSection: ['Cycle statistics', 'Insights', 'Anomalies'],
+    keywords: ['menstrual cycle', 'health report', 'period tracking', 'women health'],
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50">
       {/* Header */}
@@ -292,6 +394,111 @@ const HealthReportsScreen: React.FC = () => {
             ))}
           </div>
         </div>
+
+        {/* Expert Analysis */}
+        <section className="bg-white rounded-2xl p-6 shadow-lg mt-6">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">Expert Analysis</h3>
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div className="bg-gray-50 rounded-lg p-4">
+              <div className="text-xs text-gray-500">Median Cycle</div>
+              <div className="text-xl font-semibold">{Math.round(medianCycleLength * 10) / 10} days</div>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-4">
+              <div className="text-xs text-gray-500">Shortest / Longest</div>
+              <div className="text-xl font-semibold">{shortestCycle} / {longestCycle} days</div>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-4">
+              <div className="text-xs text-gray-500">MAD (robust variability)</div>
+              <div className="text-xl font-semibold">{Math.round(mad * 10) / 10} days</div>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-4">
+              <div className="text-xs text-gray-500">Coefficient of Variation</div>
+              <div className="text-xl font-semibold">{coefVar.toFixed(1)}%</div>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div className="bg-gray-50 rounded-lg p-4">
+              <div className="text-xs text-gray-500">Predicted next start</div>
+              <div className="text-xl font-semibold">
+                {predictedNextDate ? `${formatDate(predictedNextDate)}${typeof daysUntilNext === 'number' ? ` (${daysUntilNext} days)` : ''}` : '—'}
+              </div>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-4">
+              <div className="text-xs text-gray-500">Anomalies</div>
+              <div className="text-sm text-gray-800">
+                {anomalies.length ? (
+                  <ul className="list-disc pl-5 space-y-1">
+                    {anomalies.map((a, i) => (
+                      <li key={i}>{a}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <span className="text-green-700">None detected</span>
+                )}
+              </div>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-gray-50 rounded-lg p-4">
+              <div className="text-xs text-gray-500 mb-2">Top symptoms</div>
+              {topSymptoms.length ? (
+                <div className="flex flex-wrap gap-2">
+                  {topSymptoms.map(([name, count]) => (
+                    <span key={name} className="px-2 py-1 rounded-full text-xs bg-primary/10 text-primary">
+                      {name} · {count}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <span className="text-sm text-gray-500">No symptom patterns yet</span>
+              )}
+            </div>
+            <div className="bg-gray-50 rounded-lg p-4">
+              <div className="text-xs text-gray-500 mb-2">Mood distribution</div>
+              {Object.keys(moodCounts).length ? (
+                <div className="flex flex-wrap gap-2">
+                  {Object.entries(moodCounts).map(([mood, count]) => (
+                    <span key={mood} className="px-2 py-1 rounded-full text-xs bg-secondary/10 text-secondary">
+                      {mood}: {count}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <span className="text-sm text-gray-500">No mood data yet</span>
+              )}
+            </div>
+          </div>
+        </section>
+
+        {/* Contact a Specialist */}
+        <section className="bg-white rounded-2xl p-6 shadow-lg mt-6">
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">Contact a Specialist</h3>
+          <p className="text-sm text-gray-600 mb-4">This report is informational and not a diagnosis. If you have concerns or notice persistent anomalies, consider consulting a qualified healthcare professional.</p>
+          <div className="flex gap-3">
+            <a
+              href={`mailto:?subject=Cycle health report&body=${encodeURIComponent(report)}`}
+              className="bg-gradient-to-r from-primary to-secondary text-white px-4 py-2 rounded-lg hover:shadow-md transition-all"
+            >
+              Email this report
+            </a>
+            <button
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(report);
+                  alert('Report copied to clipboard');
+                } catch (e) {
+                  console.error('Copy failed', e);
+                }
+              }}
+              className="border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-50 transition-all"
+            >
+              Copy report
+            </button>
+          </div>
+        </section>
+
+        {/* Structured Data */}
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       </div>
 
       {/* Bottom Navigation */}
