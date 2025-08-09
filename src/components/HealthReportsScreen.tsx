@@ -140,7 +140,7 @@ const HealthReportsScreen: React.FC = () => {
     },
     periodLength: {
       label: "Period Length", 
-      color: "hsl(var(--secondary))",
+      color: "hsl(var(--destructive))",
     },
   };
 
@@ -301,12 +301,12 @@ const HealthReportsScreen: React.FC = () => {
             <div className="text-xs text-gray-500">days</div>
           </div>
           <div className="bg-white rounded-xl p-4 shadow-lg text-center">
-            <div className="text-2xl font-bold text-secondary">{averageStats.avgPeriodLength}</div>
+            <div className="text-2xl font-bold text-secondary-foreground">{averageStats.avgPeriodLength}</div>
             <div className="text-xs text-gray-600">Avg Period</div>
             <div className="text-xs text-gray-500">days</div>
           </div>
           <div className="bg-white rounded-xl p-4 shadow-lg text-center">
-            <div className="text-2xl font-bold text-accent">{averageStats.cycleVariability}</div>
+            <div className="text-2xl font-bold text-accent-foreground">{averageStats.cycleVariability}</div>
             <div className="text-xs text-gray-600">Variability</div>
             <div className="text-xs text-gray-500">days</div>
           </div>
@@ -458,7 +458,7 @@ const HealthReportsScreen: React.FC = () => {
               {Object.keys(moodCounts).length ? (
                 <div className="flex flex-wrap gap-2">
                   {Object.entries(moodCounts).map(([mood, count]) => (
-                    <span key={mood} className="px-2 py-1 rounded-full text-xs bg-secondary/10 text-secondary">
+                    <span key={mood} className="px-2 py-1 rounded-full text-xs bg-secondary/10 text-secondary-foreground">
                       {mood}: {count}
                     </span>
                   ))}
