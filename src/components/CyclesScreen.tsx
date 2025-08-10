@@ -4,17 +4,47 @@ import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import { formatDate } from '../utils/dateUtils';
 import { useToast } from '@/hooks/use-toast';
-import { Cycle } from '../types';
+import { Cycle, Symptom } from '../types';
 import { supabase } from '@/integrations/supabase/client';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 
 const CyclesScreen: React.FC = () => {
   const { user } = useAuth();
-  const { cycles, setCycles, setCurrentScreen } = useApp();
+  const { cycles, setCycles, symptoms, setSymptoms, setCurrentScreen } = useApp();
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [cycleLength, setCycleLength] = useState(28);
   const [periodLength, setPeriodLength] = useState(5);
+  const [selectedMood, setSelectedMood] = useState('');
+  const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
+  const [spotting, setSpotting] = useState<'none' | 'light' | 'heavy'>('none');
+  const [menstrualFlow, setMenstrualFlow] = useState<'light' | 'medium' | 'heavy' | 'none'>('none');
+
+  const [editingCycle, setEditingCycle] = useState<Cycle | null>(null);
+  const [editStartDate, setEditStartDate] = useState('');
+  const [editCycleLength, setEditCycleLength] = useState(28);
+  const [editPeriodLength, setEditPeriodLength] = useState(5);
+  const [editOriginalStartDate, setEditOriginalStartDate] = useState('');
+
   const { toast } = useToast();
+
+  const moods = [
+    { name: 'Calm', emoji: '😌', color: 'bg-blue-100 text-blue-800' },
+    { name: 'Happy', emoji: '😊', color: 'bg-yellow-100 text-yellow-800' },
+    { name: 'Anxious', emoji: '😰', color: 'bg-orange-100 text-orange-800' },
+    { name: 'Sad', emoji: '😢', color: 'bg-gray-100 text-gray-800' },
+    { name: 'Irritated', emoji: '😤', color: 'bg-red-100 text-red-800' },
+    { name: 'Energetic', emoji: '⚡', color: 'bg-green-100 text-green-800' }
+  ];
+
+  const symptomOptions = [
+    'Headache', 'Cramps', 'Diarrhea', 'Bloating', 'Nausea', 
+    'Breast Tenderness', 'Fatigue', 'Acne', 'Food Cravings', 'Back Pain'
+  ];
+
+  const handleSymptomToggle = (symptom: string) => {
+    setSelectedSymptoms(prev => prev.includes(symptom) ? prev.filter(s => s !== symptom) : [...prev, symptom]);
+  };
 
   const sortedCycles = cycles.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
 
@@ -36,6 +66,7 @@ const CyclesScreen: React.FC = () => {
       startDate,
       endDate: endDate || undefined,
       length: cycleLength,
+      periodLength,
       createdAt: new Date().toISOString()
     };
 
@@ -64,6 +95,30 @@ const CyclesScreen: React.FC = () => {
         .update({ last_period_date: latestCycle.startDate })
         .eq('id', user.id);
 
+      // Also create a symptom entry for the cycle start date
+      const newSymptom: Symptom = {
+        id: (Date.now() + 1).toString(),
+        userId: user.id,
+        date: startDate,
+        mood: selectedMood,
+        symptoms: selectedSymptoms,
+        spotting,
+        menstrualFlow,
+        createdAt: new Date().toISOString()
+      };
+      setSymptoms([...symptoms, newSymptom]);
+
+      await supabase
+        .from('symptoms')
+        .insert({
+          user_id: user.id,
+          date: startDate,
+          mood: selectedMood,
+          symptoms: selectedSymptoms,
+          spotting,
+          menstrual_flow: menstrualFlow,
+        });
+
       // Trigger profile update event
       window.dispatchEvent(new CustomEvent('profile-updated'));
     } catch (error) {
@@ -72,11 +127,15 @@ const CyclesScreen: React.FC = () => {
     
     toast({
       title: "Success",
-      description: "Cycle saved successfully!"
+      description: "Cycle and symptoms saved successfully!"
     });
 
     setStartDate('');
     setEndDate('');
+    setSelectedMood('');
+    setSelectedSymptoms([]);
+    setSpotting('none');
+    setMenstrualFlow('none');
   };
 
   const handleDeleteCycle = async (cycleId: string, cycleDate: string) => {
@@ -126,6 +185,45 @@ const CyclesScreen: React.FC = () => {
         variant: "destructive"
       });
     }
+  };
+
+  const openEdit = (cycle: Cycle) => {
+    setEditingCycle(cycle);
+    setEditStartDate(cycle.startDate);
+    setEditCycleLength(cycle.length);
+    setEditPeriodLength(cycle.periodLength ?? 5);
+    setEditOriginalStartDate(cycle.startDate);
+  };
+
+  const handleUpdateCycle = async () => {
+    if (!editingCycle || !user) return;
+
+    // Update local state
+    const updated = cycles.map(c => c.id === editingCycle.id ? {
+      ...c,
+      startDate: editStartDate,
+      length: editCycleLength,
+      periodLength: editPeriodLength,
+    } : c);
+    setCycles(updated);
+
+    try {
+      // Try to update the corresponding DB row by matching on user and original start date
+      await supabase
+        .from('cycles')
+        .update({
+          start_date: editStartDate,
+          cycle_length: editCycleLength,
+          period_length: editPeriodLength,
+        })
+        .eq('user_id', user.id)
+        .eq('start_date', editOriginalStartDate);
+    } catch (e) {
+      console.error('Failed to update cycle in DB', e);
+    }
+
+    toast({ title: 'Updated', description: 'Cycle updated successfully' });
+    setEditingCycle(null);
   };
 
   const calculateNextPeriod = () => {
@@ -220,6 +318,13 @@ const CyclesScreen: React.FC = () => {
                           {index === 0 ? 'Latest' : 'Completed'}
                         </span>
                         <button
+                          onClick={() => openEdit(cycle)}
+                          className="text-blue-600 hover:text-blue-800 text-sm px-2 py-1 rounded hover:bg-blue-50"
+                          title="Edit cycle"
+                        >
+                          ✏️
+                        </button>
+                        <button
                           onClick={() => handleDeleteCycle(cycle.id, cycle.startDate)}
                           className="text-red-500 hover:text-red-700 text-sm px-2 py-1 rounded hover:bg-red-50"
                           title="Delete cycle"
@@ -228,10 +333,14 @@ const CyclesScreen: React.FC = () => {
                         </button>
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                       <div>
                         <span className="text-gray-500">Cycle Length:</span>
                         <span className="ml-1 font-medium">{cycle.length} days</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-500">Period Length:</span>
+                        <span className="ml-1 font-medium">{cycle.periodLength} days</span>
                       </div>
                     </div>
                   </div>
@@ -272,32 +381,94 @@ const CyclesScreen: React.FC = () => {
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Cycle Length (days)
-              </label>
-              <input
-                type="number"
-                min="21"
-                max="35"
-                value={cycleLength}
-                onChange={(e) => setCycleLength(Number(e.target.value))}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Cycle Length (days)
+                </label>
+                <input
+                  type="number"
+                  min="21"
+                  max="35"
+                  value={cycleLength}
+                  onChange={(e) => setCycleLength(Number(e.target.value))}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Period Length (days)
+                </label>
+                <input
+                  type="number"
+                  min="3"
+                  max="10"
+                  value={periodLength}
+                  onChange={(e) => setPeriodLength(Number(e.target.value))}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+                />
+              </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Period Length (days)
-              </label>
-              <input
-                type="number"
-                min="3"
-                max="7"
-                value={periodLength}
-                onChange={(e) => setPeriodLength(Number(e.target.value))}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
-              />
+            {/* Symptoms for this cycle start */}
+            <div className="bg-gray-50 rounded-xl p-4 space-y-4">
+              <h4 className="text-sm font-semibold text-gray-700">Day 1 Symptoms (optional)</h4>
+
+              {/* Mood */}
+              <div>
+                <div className="text-xs text-gray-500 mb-2">Mood</div>
+                <div className="grid grid-cols-3 gap-2">
+                  {moods.map((m) => (
+                    <button
+                      key={m.name}
+                      type="button"
+                      onClick={() => setSelectedMood(m.name)}
+                      className={`p-2 rounded-lg border-2 ${selectedMood === m.name ? 'border-purple-400 bg-purple-50' : 'border-gray-200 hover:border-gray-300'}`}
+                    >
+                      <div className="text-xl">{m.emoji}</div>
+                      <div className="text-xs text-gray-700">{m.name}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Symptom tags */}
+              <div>
+                <div className="text-xs text-gray-500 mb-2">Symptoms</div>
+                <div className="grid grid-cols-2 gap-2">
+                  {symptomOptions.map((s) => (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => handleSymptomToggle(s)}
+                      className={`p-2 rounded-lg border-2 text-xs font-medium ${selectedSymptoms.includes(s) ? 'border-pink-400 bg-pink-50 text-pink-800' : 'border-gray-200 text-gray-700 hover:border-gray-300'}`}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Spotting and Flow */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <div className="text-xs text-gray-500 mb-2">Spotting</div>
+                  <div className="flex gap-2">
+                    {['none','light','heavy'].map((opt) => (
+                      <button key={opt} type="button" onClick={() => setSpotting(opt as any)} className={`flex-1 p-2 rounded-lg border-2 capitalize ${spotting===opt ? 'border-purple-400 bg-purple-50 text-purple-800' : 'border-gray-200 text-gray-700 hover:border-gray-300'}`}>{opt}</button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-500 mb-2">Menstrual Flow</div>
+                  <div className="flex gap-2">
+                    {['none','light','medium','heavy'].map((opt) => (
+                      <button key={opt} type="button" onClick={() => setMenstrualFlow(opt as any)} className={`flex-1 p-2 rounded-lg border-2 capitalize ${menstrualFlow===opt ? 'border-pink-400 bg-pink-50 text-pink-800' : 'border-gray-200 text-gray-700 hover:border-gray-300'}`}>{opt}</button>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
 
             <button
@@ -308,6 +479,36 @@ const CyclesScreen: React.FC = () => {
             </button>
           </div>
         </div>
+
+        {/* Edit Cycle Dialog */}
+        <Dialog open={!!editingCycle} onOpenChange={(open) => { if (!open) setEditingCycle(null); }}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Cycle</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+                <input type="date" value={editStartDate} onChange={(e)=>setEditStartDate(e.target.value)} className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500" />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Cycle Length</label>
+                  <input type="number" min={21} max={35} value={editCycleLength} onChange={(e)=>setEditCycleLength(Number(e.target.value))} className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Period Length</label>
+                  <input type="number" min={3} max={10} value={editPeriodLength} onChange={(e)=>setEditPeriodLength(Number(e.target.value))} className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500" />
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <button onClick={()=>setEditingCycle(null)} className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50">Cancel</button>
+              <button onClick={handleUpdateCycle} className="px-4 py-2 rounded-lg bg-gradient-to-r from-pink-400 to-purple-400 text-white">Save</button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
       </div>
 
       {/* Bottom Navigation */}

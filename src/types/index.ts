@@ -25,7 +25,8 @@ export interface Cycle {
   userId: string;
   startDate: string;
   endDate?: string;
-  length: number;
+  length: number; // cycle length in days
+  periodLength: number; // period length in days
   createdAt: string;
 }
 

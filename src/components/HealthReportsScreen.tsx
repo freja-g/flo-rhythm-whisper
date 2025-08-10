@@ -6,6 +6,20 @@ import { Cycle } from '../types';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 
+const DoctorAdviceRenderer: React.FC<{ advice: string[] }> = ({ advice }) => (
+  <div className="space-y-2">
+    {advice.length ? (
+      <ul className="list-disc pl-5 space-y-1 text-sm text-gray-800">
+        {advice.map((a, i) => (
+          <li key={i}>{a}. Consider consulting a healthcare professional.</li>
+        ))}
+      </ul>
+    ) : (
+      <p className="text-sm text-gray-600">No urgent recommendations based on your data.</p>
+    )}
+  </div>
+);
+
 const HealthReportsScreen: React.FC = () => {
   const { cycles, symptoms, setCurrentScreen } = useApp();
   const { user } = useAuth();
@@ -56,7 +70,7 @@ const HealthReportsScreen: React.FC = () => {
       return {
         cycleNumber,
         cycleLength: actualCycleLength,
-        periodLength: cycle.length, // Using the stored period length
+        periodLength: cycle.periodLength || 5, // Using stored period length
         date: formatDate(cycle.startDate),
         month: new Date(cycle.startDate).toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
       };
@@ -76,7 +90,7 @@ const HealthReportsScreen: React.FC = () => {
     }
 
     const avgCycleLength = cycleLengths.reduce((sum, length) => sum + length, 0) / cycleLengths.length;
-    const avgPeriodLength = sortedCycles.reduce((sum, cycle) => sum + cycle.length, 0) / sortedCycles.length;
+    const avgPeriodLength = sortedCycles.reduce((sum, cycle) => sum + (cycle.periodLength || 0), 0) / sortedCycles.length;
     
     // Calculate variability (standard deviation)
     const variance = cycleLengths.reduce((sum, length) => sum + Math.pow(length - avgCycleLength, 2), 0) / cycleLengths.length;
@@ -245,7 +259,7 @@ const HealthReportsScreen: React.FC = () => {
   consecutiveCycleLengths.forEach((len, idx) => {
     if (len < 21 || len > 35) anomalies.push(`Cycle ${idx + 1}→${idx + 2}: length ${len} days`);
   });
-  const longPeriods = sortedCycles.filter((c) => c.length > 7).length;
+  const longPeriods = sortedCycles.filter((c) => (c.periodLength || 0) > 7).length;
   if (longPeriods > 0) anomalies.push(`${longPeriods} cycle(s) with period length > 7 days`);
   if (consecutiveCycleLengths.some((len) => len >= 90)) anomalies.push('One or more cycles ≥ 90 days');
 
@@ -270,7 +284,7 @@ const HealthReportsScreen: React.FC = () => {
     description: 'Expert analysis of menstrual cycle trends and health insights.',
     author: user?.email || 'user',
     datePublished: new Date().toISOString(),
-    articleSection: ['Cycle statistics', 'Insights', 'Anomalies'],
+    articleSection: ['Cycle statistics', 'Insights', 'Anomalies', 'Doctor advice'],
     keywords: ['menstrual cycle', 'health report', 'period tracking', 'women health'],
   };
 
@@ -286,7 +300,11 @@ const HealthReportsScreen: React.FC = () => {
             ←
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-white">Health Reports</h1>
+            <h1 className="text-2xl font-bold text-white flex items-center gap-2">Health Reports
+              <span className="text-xs font-medium px-2 py-1 rounded-full bg-white/20 text-white/90">
+                {/* Regularity badge will be set below */}
+              </span>
+            </h1>
             <p className="text-white/90">Your cycle trends & insights</p>
           </div>
         </div>
@@ -294,7 +312,7 @@ const HealthReportsScreen: React.FC = () => {
 
       <div className="p-6 pb-24">
         {/* Statistics Cards */}
-        <div className="grid grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-6">
           <div className="bg-white rounded-xl p-4 shadow-lg text-center">
             <div className="text-2xl font-bold text-primary">{averageStats.avgCycleLength}</div>
             <div className="text-xs text-gray-600">Avg Cycle</div>
@@ -309,6 +327,11 @@ const HealthReportsScreen: React.FC = () => {
             <div className="text-2xl font-bold text-accent-foreground">{averageStats.cycleVariability}</div>
             <div className="text-xs text-gray-600">Variability</div>
             <div className="text-xs text-gray-500">days</div>
+          </div>
+          <div className="bg-white rounded-xl p-4 shadow-lg text-center">
+            <div className="text-2xl font-bold text-primary">{predictedNextDate ? formatDate(predictedNextDate) : '—'}</div>
+            <div className="text-xs text-gray-600">Next Period</div>
+            <div className="text-xs text-gray-500">{typeof daysUntilNext === 'number' ? `${daysUntilNext} days` : ''}</div>
           </div>
         </div>
 
@@ -398,7 +421,7 @@ const HealthReportsScreen: React.FC = () => {
         {/* Expert Analysis */}
         <section className="bg-white rounded-2xl p-6 shadow-lg mt-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">Expert Analysis</h3>
-          <div className="grid grid-cols-2 gap-4 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
             <div className="bg-gray-50 rounded-lg p-4">
               <div className="text-xs text-gray-500">Median Cycle</div>
               <div className="text-xl font-semibold">{Math.round(medianCycleLength * 10) / 10} days</div>
@@ -416,7 +439,7 @@ const HealthReportsScreen: React.FC = () => {
               <div className="text-xl font-semibold">{coefVar.toFixed(1)}%</div>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
             <div className="bg-gray-50 rounded-lg p-4">
               <div className="text-xs text-gray-500">Predicted next start</div>
               <div className="text-xl font-semibold">
@@ -438,7 +461,7 @@ const HealthReportsScreen: React.FC = () => {
               </div>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="bg-gray-50 rounded-lg p-4">
               <div className="text-xs text-gray-500 mb-2">Top symptoms</div>
               {topSymptoms.length ? (
@@ -470,6 +493,12 @@ const HealthReportsScreen: React.FC = () => {
           </div>
         </section>
 
+        {/* When to See a Doctor */}
+        <section className="bg-white rounded-2xl p-6 shadow-lg mt-6">
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">When to See a Doctor</h3>
+          <DoctorAdviceRenderer advice={doctorAdvice} />
+        </section>
+
         {/* Contact a Specialist */}
         <section className="bg-white rounded-2xl p-6 shadow-lg mt-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-2">Contact a Specialist</h3>
@@ -497,7 +526,8 @@ const HealthReportsScreen: React.FC = () => {
           </div>
         </section>
 
-        {/* Structured Data */}
+        {/* Doctor Advice Renderer */}
+        <DoctorAdviceRenderer advice={doctorAdvice} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       </div>
 
