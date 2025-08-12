@@ -411,13 +411,13 @@ const CyclesScreen: React.FC = () => {
             </div>
 
             {/* Symptoms for this cycle start */}
-            <div className="bg-gray-50 rounded-xl p-4 space-y-4">
-              <h4 className="text-sm font-semibold text-gray-700">Day 1 Symptoms (optional)</h4>
+            <div className="bg-gray-50 rounded-xl p-3 sm:p-4 space-y-4">
+              <h4 className="text-xs sm:text-sm font-semibold text-gray-700">Day 1 Symptoms (optional)</h4>
 
               {/* Mood */}
               <div>
                 <div className="text-xs text-gray-500 mb-2">Mood</div>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {moods.map((m) => (
                     <button
                       key={m.name}
