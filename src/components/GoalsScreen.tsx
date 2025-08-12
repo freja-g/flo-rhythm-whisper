@@ -175,7 +175,7 @@ const GoalsScreen: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50">
       {/* Header */}
-      <div className="bg-gradient-to-r from-pink-400 to-purple-400 p-6">
+      <div className="bg-gradient-to-r from-pink-400 to-purple-400 p-4 sm:p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <button
@@ -185,20 +185,20 @@ const GoalsScreen: React.FC = () => {
               ←
             </button>
             <div>
-              <h1 className="text-2xl font-bold text-white">My Goals</h1>
-              <p className="text-white/90">Track your wellness objectives</p>
+              <h1 className="text-xl sm:text-2xl font-bold text-white">My Goals</h1>
+              <p className="text-sm sm:text-base text-white/90">Track your wellness objectives</p>
             </div>
           </div>
           <Target className="text-white w-8 h-8" />
         </div>
       </div>
 
-      <div className="p-6 pb-24">
+      <div className="p-4 sm:p-6 pb-24">
         {/* Add Goal Button */}
         {!showAddForm && (
           <button
             onClick={() => setShowAddForm(true)}
-            className="w-full bg-white rounded-2xl p-6 shadow-lg border-2 border-dashed border-pink-200 hover:border-pink-400 transition-colors mb-6"
+            className="w-full bg-white rounded-2xl p-4 sm:p-6 shadow-lg border-2 border-dashed border-pink-200 hover:border-pink-400 transition-colors mb-6"
           >
             <div className="flex items-center justify-center space-x-3 text-pink-500">
               <Plus className="w-6 h-6" />
@@ -209,8 +209,8 @@ const GoalsScreen: React.FC = () => {
 
         {/* Add/Edit Form */}
         {showAddForm && (
-          <div className="bg-white rounded-2xl p-6 shadow-lg mb-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+          <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg mb-6">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-4">
               {editingGoal ? 'Edit Goal' : 'Add New Goal'}
             </h3>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -223,7 +223,7 @@ const GoalsScreen: React.FC = () => {
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   placeholder="e.g., Drink 8 glasses of water daily"
-                  className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-transparent"
+                  className="w-full p-2 sm:p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-transparent text-base"
                   required
                 />
               </div>
