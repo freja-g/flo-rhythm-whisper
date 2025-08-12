@@ -172,23 +172,23 @@ const ChatScreen: React.FC = () => {
       </div>
 
       {/* Input */}
-      <div className="bg-white border-t border-gray-200 p-4">
-        <div className="flex space-x-3">
+      <div className="bg-white border-t border-gray-200 p-3 sm:p-4">
+        <div className="flex space-x-2 sm:space-x-3">
           <input
             type="text"
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
             placeholder="Type your message..."
-            className="flex-1 p-3 border border-gray-200 rounded-full focus:ring-2 focus:ring-purple-400 focus:border-transparent"
+            className="flex-1 p-2 sm:p-3 border border-gray-200 rounded-full focus:ring-2 focus:ring-purple-400 focus:border-transparent text-base"
             disabled={isLoading}
           />
           <button
             onClick={sendMessage}
             disabled={!inputMessage.trim() || isLoading}
-            className="bg-gradient-to-r from-pink-400 to-purple-400 text-white p-3 rounded-full hover:shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:transform-none"
+            className="bg-gradient-to-r from-pink-400 to-purple-400 text-white p-2 sm:p-3 rounded-full hover:shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:transform-none min-w-[44px]"
           >
-            <span className="text-lg">→</span>
+            <span className="text-base sm:text-lg">→</span>
           </button>
         </div>
       </div>
