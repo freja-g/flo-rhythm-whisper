@@ -177,8 +177,8 @@ const HealthReportsScreen: React.FC = () => {
           </div>
         </div>
 
-        <div className="p-6">
-          <div className="bg-white rounded-2xl p-8 shadow-lg text-center">
+        <div className="p-4 sm:p-6">
+          <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-lg text-center">
             <div className="text-6xl mb-4">📊</div>
             <h3 className="text-xl font-semibold text-gray-800 mb-2">Not Enough Data</h3>
             <p className="text-gray-600 mb-4">
