@@ -97,7 +97,7 @@ const LogScreen: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50">
       {/* Header */}
-      <div className="bg-gradient-to-r from-pink-400 to-purple-400 p-6">
+      <div className="bg-gradient-to-r from-pink-400 to-purple-400 p-4 sm:p-6">
         <div className="flex items-center space-x-4">
           <button
             onClick={() => setCurrentScreen('dashboard')}
@@ -106,28 +106,28 @@ const LogScreen: React.FC = () => {
             ←
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-white">Log Symptoms</h1>
-            <p className="text-white/90">Track how you're feeling today</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-white">Log Symptoms</h1>
+            <p className="text-sm sm:text-base text-white/90">Track how you're feeling today</p>
           </div>
         </div>
       </div>
 
-      <div className="p-6 space-y-6 pb-24">
+      <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 pb-24">
         {/* Mood Selection */}
-        <div className="bg-white rounded-2xl p-6 shadow-lg">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">How's your mood?</h3>
-          <div className="grid grid-cols-3 gap-3">
+        <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-4">How's your mood?</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
             {moods.map((mood) => (
               <button
                 key={mood.name}
                 onClick={() => setSelectedMood(mood.name)}
-                className={`p-3 rounded-xl border-2 transition-all ${
+                className={`p-2 sm:p-3 rounded-xl border-2 transition-all ${
                   selectedMood === mood.name
                     ? 'border-purple-400 bg-purple-50'
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
-                <div className="text-2xl mb-1">{mood.emoji}</div>
+                <div className="text-xl sm:text-2xl mb-1">{mood.emoji}</div>
                 <div className="text-sm font-medium text-gray-700">{mood.name}</div>
               </button>
             ))}
