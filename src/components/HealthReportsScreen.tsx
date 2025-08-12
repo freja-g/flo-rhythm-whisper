@@ -702,7 +702,7 @@ const HealthReportsScreen: React.FC = () => {
             <span className="text-xs text-gray-400">Cycles</span>
           </button>
           <button className="flex flex-col items-center space-y-1">
-            <span className="text-primary text-xl">📊</span>
+            <span className="text-primary text-xl">🩺</span>
             <span className="text-xs text-primary font-medium">Reports</span>
           </button>
           <button 
