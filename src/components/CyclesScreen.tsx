@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
@@ -239,7 +238,7 @@ const CyclesScreen: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50">
       {/* Header */}
-      <div className="bg-gradient-to-r from-pink-400 to-purple-400 p-6">
+      <div className="bg-gradient-to-r from-pink-400 to-purple-400 p-4 sm:p-6">
         <div className="flex items-center space-x-4">
           <button
             onClick={() => setCurrentScreen('dashboard')}
@@ -248,18 +247,18 @@ const CyclesScreen: React.FC = () => {
             ←
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-white">Cycles</h1>
-            <p className="text-white/90">Track your menstrual cycle</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-white">Cycles</h1>
+            <p className="text-sm sm:text-base text-white/90">Track your menstrual cycle</p>
           </div>
         </div>
       </div>
 
-      <div className="p-6 pb-24">
+      <div className="p-4 sm:p-6 pb-24">
         {sortedCycles.length === 0 ? (
-          <div className="bg-white rounded-2xl p-8 shadow-lg text-center">
+          <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-lg text-center">
             <div className="text-6xl mb-4">📅</div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">No Cycles Yet</h3>
-            <p className="text-gray-600 mb-4">Start tracking your menstrual cycle to see history here</p>
+            <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">No Cycles Yet</h3>
+            <p className="text-sm sm:text-base text-gray-600 mb-4">Start tracking your menstrual cycle to see history here</p>
             <button
               onClick={() => {
                 const today = new Date().toISOString().split('T')[0];
@@ -275,8 +274,8 @@ const CyclesScreen: React.FC = () => {
           <div className="space-y-6">
             {/* Current Cycle Info */}
             {sortedCycles.length > 0 && (
-              <div className="bg-white rounded-2xl p-6 shadow-lg">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Current Cycle Information</h3>
+              <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-4">Current Cycle Information</h3>
                 <div className="space-y-3">
                   <div className="flex justify-between py-2">
                     <span className="text-gray-600">Last Period Date</span>
@@ -295,8 +294,8 @@ const CyclesScreen: React.FC = () => {
             )}
 
             {/* Cycles History */}
-            <div className="bg-white rounded-2xl p-6 shadow-lg">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">Cycle History</h3>
+            <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-4">Cycle History</h3>
               <div className="space-y-4">
                 {sortedCycles.map((cycle, index) => (
                   <div key={cycle.id} className="border-l-4 border-pink-400 pl-4 py-3 bg-pink-50 rounded-r-lg">
@@ -351,8 +350,8 @@ const CyclesScreen: React.FC = () => {
         )}
 
         {/* Add New Cycle */}
-        <div id="cycle-form" className="bg-white rounded-2xl p-6 shadow-lg mt-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">
+        <div id="cycle-form" className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg mt-6">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-4">
             {sortedCycles.length === 0 ? 'Start Tracking Your Cycle' : 'Add New Cycle'}
           </h3>
           
@@ -365,7 +364,7 @@ const CyclesScreen: React.FC = () => {
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+                className="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-base"
               />
             </div>
 
@@ -377,11 +376,11 @@ const CyclesScreen: React.FC = () => {
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+                className="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-base"
               />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Cycle Length (days)
@@ -392,7 +391,7 @@ const CyclesScreen: React.FC = () => {
                   max="35"
                   value={cycleLength}
                   onChange={(e) => setCycleLength(Number(e.target.value))}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+                  className="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-base"
                 />
               </div>
 
@@ -406,27 +405,27 @@ const CyclesScreen: React.FC = () => {
                   max="10"
                   value={periodLength}
                   onChange={(e) => setPeriodLength(Number(e.target.value))}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+                  className="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-base"
                 />
               </div>
             </div>
 
             {/* Symptoms for this cycle start */}
-            <div className="bg-gray-50 rounded-xl p-4 space-y-4">
-              <h4 className="text-sm font-semibold text-gray-700">Day 1 Symptoms (optional)</h4>
+            <div className="bg-gray-50 rounded-xl p-3 sm:p-4 space-y-4">
+              <h4 className="text-xs sm:text-sm font-semibold text-gray-700">Day 1 Symptoms (optional)</h4>
 
               {/* Mood */}
               <div>
                 <div className="text-xs text-gray-500 mb-2">Mood</div>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {moods.map((m) => (
                     <button
                       key={m.name}
                       type="button"
                       onClick={() => setSelectedMood(m.name)}
-                      className={`p-2 rounded-lg border-2 ${selectedMood === m.name ? 'border-purple-400 bg-purple-50' : 'border-gray-200 hover:border-gray-300'}`}
+                      className={`p-2 sm:p-3 rounded-lg border-2 ${selectedMood === m.name ? 'border-purple-400 bg-purple-50' : 'border-gray-200 hover:border-gray-300'}`}
                     >
-                      <div className="text-xl">{m.emoji}</div>
+                      <div className="text-lg sm:text-xl">{m.emoji}</div>
                       <div className="text-xs text-gray-700">{m.name}</div>
                     </button>
                   ))}
@@ -456,7 +455,7 @@ const CyclesScreen: React.FC = () => {
                   <div className="text-xs text-gray-500 mb-2">Spotting</div>
                   <div className="flex gap-2">
                     {['none','light','heavy'].map((opt) => (
-                      <button key={opt} type="button" onClick={() => setSpotting(opt as any)} className={`flex-1 p-2 rounded-lg border-2 capitalize ${spotting===opt ? 'border-purple-400 bg-purple-50 text-purple-800' : 'border-gray-200 text-gray-700 hover:border-gray-300'}`}>{opt}</button>
+                      <button key={opt} type="button" onClick={() => setSpotting(opt as 'none' | 'light' | 'heavy')} className={`flex-1 p-2 rounded-lg border-2 capitalize ${spotting===opt ? 'border-purple-400 bg-purple-50 text-purple-800' : 'border-gray-200 text-gray-700 hover:border-gray-300'}`}>{opt}</button>
                     ))}
                   </div>
                 </div>
@@ -464,7 +463,7 @@ const CyclesScreen: React.FC = () => {
                   <div className="text-xs text-gray-500 mb-2">Menstrual Flow</div>
                   <div className="flex gap-2">
                     {['none','light','medium','heavy'].map((opt) => (
-                      <button key={opt} type="button" onClick={() => setMenstrualFlow(opt as any)} className={`flex-1 p-2 rounded-lg border-2 capitalize ${menstrualFlow===opt ? 'border-pink-400 bg-pink-50 text-pink-800' : 'border-gray-200 text-gray-700 hover:border-gray-300'}`}>{opt}</button>
+                      <button key={opt} type="button" onClick={() => setMenstrualFlow(opt as 'light' | 'medium' | 'heavy' | 'none')} className={`flex-1 p-2 rounded-lg border-2 capitalize ${menstrualFlow===opt ? 'border-pink-400 bg-pink-50 text-pink-800' : 'border-gray-200 text-gray-700 hover:border-gray-300'}`}>{opt}</button>
                     ))}
                   </div>
                 </div>

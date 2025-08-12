@@ -28,7 +28,7 @@ export const useNotifications = (profile: Profile | null) => {
     if (profile && notificationsEnabled && profile.last_period_date && profile.cycle_length) {
       notificationService.schedulePeriodicCheck(profile.last_period_date, profile.cycle_length);
     }
-  }, [profile, notificationsEnabled, profile?.last_period_date, profile?.cycle_length]);
+  }, [profile, notificationsEnabled, profile?.last_period_date, profile?.cycle_length, notificationService]);
 
   useEffect(() => {
     // Listen for auto-calculated period updates

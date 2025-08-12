@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
@@ -99,7 +98,7 @@ const SymptomsScreen: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50">
       {/* Header */}
-      <div className="bg-gradient-to-r from-pink-400 to-purple-400 p-6">
+      <div className="bg-gradient-to-r from-pink-400 to-purple-400 p-4 sm:p-6">
         <div className="flex items-center space-x-4">
           <button
             onClick={() => setCurrentScreen('dashboard')}
@@ -108,15 +107,15 @@ const SymptomsScreen: React.FC = () => {
             ←
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-white">Symptoms</h1>
-            <p className="text-white/90">Your logged symptoms history</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-white">Symptoms</h1>
+            <p className="text-sm sm:text-base text-white/90">Your logged symptoms history</p>
           </div>
         </div>
       </div>
 
-      <div className="p-6 pb-24">
+      <div className="p-4 sm:p-6 pb-24">
         {sortedSymptoms.length === 0 ? (
-          <div className="bg-white rounded-2xl p-8 shadow-lg text-center">
+          <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-lg text-center">
             <div className="text-6xl mb-4">📝</div>
             <h3 className="text-xl font-semibold text-gray-800 mb-2">No Symptoms Yet</h3>
             <p className="text-gray-600 mb-4">Start tracking your symptoms to see them here</p>

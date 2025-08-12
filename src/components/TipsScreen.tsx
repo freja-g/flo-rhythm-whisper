@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { articles } from '../data/articles';
@@ -32,7 +31,7 @@ const TipsScreen: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50">
       {/* Header */}
-      <div className="bg-gradient-to-r from-pink-400 to-purple-400 p-6">
+      <div className="bg-gradient-to-r from-pink-400 to-purple-400 p-4 sm:p-6">
         <div className="flex items-center space-x-4">
           <button
             onClick={() => setCurrentScreen('dashboard')}
@@ -41,18 +40,18 @@ const TipsScreen: React.FC = () => {
             ←
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-white">Tips & Info</h1>
-            <p className="text-white/90">Learn about your health</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-white">Tips & Info</h1>
+            <p className="text-sm sm:text-base text-white/90">Learn about your health</p>
           </div>
         </div>
       </div>
 
       {/* Articles */}
-      <div className="p-6 space-y-4 pb-24">
+      <div className="p-4 sm:p-6 space-y-4 pb-24">
         {articles.map((article) => (
-          <div key={article.id} className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow">
+          <div key={article.id} className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-shadow">
             <div className="flex items-start space-x-4">
-              <div className="text-3xl">{article.image}</div>
+              <div className="text-2xl sm:text-3xl">{article.image}</div>
               <div className="flex-1">
                 <div className="flex items-center space-x-2 mb-2">
                   <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs font-medium">
@@ -60,10 +59,10 @@ const TipsScreen: React.FC = () => {
                   </span>
                   <span className="text-gray-500 text-xs">{article.readTime}</span>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-2">
                   {article.title}
                 </h3>
-                <p className="text-gray-600 text-sm leading-relaxed">
+                <p className="text-gray-600 text-xs sm:text-sm leading-relaxed">
                   {article.summary}
                 </p>
                 
@@ -77,7 +76,7 @@ const TipsScreen: React.FC = () => {
                 
                 <button 
                   onClick={() => toggleArticle(article.id)}
-                  className="text-purple-600 font-medium text-sm mt-3 hover:text-purple-800 transition-colors"
+                  className="text-purple-600 font-medium text-xs sm:text-sm mt-3 hover:text-purple-800 transition-colors"
                 >
                   {expandedArticle === article.id ? 'Show Less ↑' : 'Read More →'}
                 </button>

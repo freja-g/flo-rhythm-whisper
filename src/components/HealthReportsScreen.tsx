@@ -23,7 +23,7 @@ const DoctorAdviceRenderer: React.FC<{ advice: string[] }> = ({ advice }) => (
 const HealthReportsScreen: React.FC = () => {
   const { cycles, symptoms, setCurrentScreen } = useApp();
   const { user } = useAuth();
-  const [trendData, setTrendData] = useState<any[]>([]);
+  const [trendData, setTrendData] = useState<{ name: string; cycles: number; periods: number; }[]>([]);
   const [averageStats, setAverageStats] = useState({
     avgCycleLength: 0,
     avgPeriodLength: 0,
@@ -39,7 +39,7 @@ const HealthReportsScreen: React.FC = () => {
       calculateTrends();
       calculateStats();
     }
-  }, [cycles]);
+  }, [cycles, calculateTrends, calculateStats, sortedCycles.length]);
 
   // SEO: title and meta description
   useEffect(() => {
@@ -177,14 +177,14 @@ const HealthReportsScreen: React.FC = () => {
           </div>
         </div>
 
-        <div className="p-6">
-          <div className="bg-white rounded-2xl p-8 shadow-lg text-center">
+        <div className="p-4 sm:p-6">
+          <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-lg text-center">
             <div className="text-6xl mb-4">📊</div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">Not Enough Data</h3>
-            <p className="text-gray-600 mb-4">
+            <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">Not Enough Data</h3>
+            <p className="text-sm sm:text-base text-gray-600 mb-4">
               You need at least 5 recorded cycles to view health trends and insights.
             </p>
-            <p className="text-gray-500 mb-6">
+            <p className="text-sm sm:text-base text-gray-500 mb-6">
               Current cycles: {sortedCycles.length}/5
             </p>
             <button
@@ -328,45 +328,50 @@ const HealthReportsScreen: React.FC = () => {
         </div>
       </div>
 
-      <div className="p-6 pb-24">
+      <div className="p-4 sm:p-6 pb-24">
         {/* Statistics Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white rounded-xl p-4 shadow-lg text-center">
-            <div className="text-2xl font-bold text-primary">{averageStats.avgCycleLength}</div>
-            <div className="text-xs text-gray-600">Avg Cycle</div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+          <div className="bg-white rounded-xl p-3 sm:p-4 shadow-lg text-center">
+            <div className="text-xl sm:text-2xl font-bold text-primary">{averageStats.avgCycleLength}</div>
+            <div className="text-xs sm:text-sm text-gray-600">Avg Cycle</div>
             <div className="text-xs text-gray-500">days</div>
           </div>
-          <div className="bg-white rounded-xl p-4 shadow-lg text-center">
-            <div className="text-2xl font-bold text-secondary-foreground">{averageStats.avgPeriodLength}</div>
-            <div className="text-xs text-gray-600">Avg Period</div>
+          <div className="bg-white rounded-xl p-3 sm:p-4 shadow-lg text-center">
+            <div className="text-xl sm:text-2xl font-bold text-secondary-foreground">{averageStats.avgPeriodLength}</div>
+            <div className="text-xs sm:text-sm text-gray-600">Avg Period</div>
             <div className="text-xs text-gray-500">days</div>
           </div>
-          <div className="bg-white rounded-xl p-4 shadow-lg text-center">
-            <div className="text-2xl font-bold text-accent-foreground">{averageStats.cycleVariability}</div>
-            <div className="text-xs text-gray-600">Variability</div>
+          <div className="bg-white rounded-xl p-3 sm:p-4 shadow-lg text-center">
+            <div className="text-xl sm:text-2xl font-bold text-accent-foreground">{averageStats.cycleVariability}</div>
+            <div className="text-xs sm:text-sm text-gray-600">Variability</div>
             <div className="text-xs text-gray-500">days</div>
           </div>
-          <div className="bg-white rounded-xl p-4 shadow-lg text-center">
-            <div className="text-2xl font-bold text-primary">{predictedNextDate ? formatDate(predictedNextDate) : '—'}</div>
-            <div className="text-xs text-gray-600">Next Period</div>
+          <div className="bg-white rounded-xl p-3 sm:p-4 shadow-lg text-center col-span-2 lg:col-span-1">
+            <div className="text-lg sm:text-xl font-bold text-primary">{predictedNextDate ? formatDate(predictedNextDate) : '—'}</div>
+            <div className="text-xs sm:text-sm text-gray-600">Next Period</div>
             <div className="text-xs text-gray-500">{typeof daysUntilNext === 'number' ? `${daysUntilNext} days` : ''}</div>
           </div>
         </div>
 
         {/* Cycle Length Trend Chart */}
-        <div className="bg-white rounded-2xl p-6 shadow-lg mb-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Cycle Length Trends</h3>
-          <ChartContainer config={chartConfig} className="h-64">
+        <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg mb-6">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-4">Cycle Length Trends</h3>
+          <ChartContainer config={chartConfig} className="h-48 sm:h-64 md:h-72">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={trendData}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="month" 
-                  fontSize={12}
+                <XAxis
+                  dataKey="month"
+                  fontSize={10}
+                  interval={0}
+                  angle={-45}
+                  textAnchor="end"
+                  height={60}
                 />
-                <YAxis 
+                <YAxis
                   domain={[20, 40]}
-                  fontSize={12}
+                  fontSize={10}
+                  width={40}
                 />
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <Line 
@@ -382,19 +387,24 @@ const HealthReportsScreen: React.FC = () => {
         </div>
 
         {/* Period Length Chart */}
-        <div className="bg-white rounded-2xl p-6 shadow-lg mb-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Period Length Comparison</h3>
-          <ChartContainer config={chartConfig} className="h-64">
+        <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg mb-6">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-4">Period Length Comparison</h3>
+          <ChartContainer config={chartConfig} className="h-48 sm:h-64 md:h-72">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={trendData}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="month" 
-                  fontSize={12}
+                <XAxis
+                  dataKey="month"
+                  fontSize={10}
+                  interval={0}
+                  angle={-45}
+                  textAnchor="end"
+                  height={60}
                 />
-                <YAxis 
+                <YAxis
                   domain={[0, 10]}
-                  fontSize={12}
+                  fontSize={10}
+                  width={40}
                 />
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <Bar 
@@ -408,8 +418,8 @@ const HealthReportsScreen: React.FC = () => {
         </div>
 
         {/* Health Insights */}
-        <div className="bg-white rounded-2xl p-6 shadow-lg">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Health Insights</h3>
+        <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-4">Health Insights</h3>
           <div className="space-y-4">
             {insights.map((insight, index) => (
               <div key={index} className={`p-4 rounded-lg border-l-4 ${
@@ -660,10 +670,12 @@ const HealthReportsScreen: React.FC = () => {
           <p className="text-sm text-gray-600 mb-4">This report is informational and not a diagnosis. If you have concerns or notice persistent anomalies, consider consulting a qualified healthcare professional.</p>
           <div className="flex gap-3">
             <a
-              href={`mailto:?subject=Cycle health report&body=${encodeURIComponent(report)}`}
+              href="https://my1health.com/search/providers/conditions/menstrual-irregularities/kenya"
+              target="_blank"
+              rel="noopener noreferrer"
               className="bg-gradient-to-r from-primary to-secondary text-white px-4 py-2 rounded-lg hover:shadow-md transition-all"
             >
-              Email this report
+              Contact Specialist
             </a>
             <button
               onClick={async () => {

@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
@@ -85,7 +84,7 @@ const ChatScreen: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50 flex flex-col">
       {/* Header */}
-      <div className="bg-gradient-to-r from-pink-400 to-purple-400 p-6">
+      <div className="bg-gradient-to-r from-pink-400 to-purple-400 p-4 sm:p-6">
         <div className="flex items-center space-x-4">
           <button
             onClick={() => setCurrentScreen('dashboard')}
@@ -94,8 +93,8 @@ const ChatScreen: React.FC = () => {
             ←
           </button>
           <div className="flex-1">
-            <h1 className="text-2xl font-bold text-white">AI Chatbot</h1>
-            <p className="text-white/90">
+            <h1 className="text-xl sm:text-2xl font-bold text-white">AI Chatbot</h1>
+            <p className="text-sm sm:text-base text-white/90">
               {isOnline ? 'AI-powered menstrual health assistant' : 'Offline menstrual health companion'}
             </p>
           </div>
@@ -112,14 +111,14 @@ const ChatScreen: React.FC = () => {
       </div>
 
       {/* Chat Messages */}
-      <div className="flex-1 p-6 space-y-4 overflow-y-auto">
+      <div className="flex-1 p-4 sm:p-6 space-y-3 sm:space-y-4 overflow-y-auto">
         {chatMessages.length === 0 && (
           <div className="text-center py-8">
             <div className="text-6xl mb-4">🌸</div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">
+            <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">
               Hello! How can I help you today?
             </h3>
-            <p className="text-gray-600 mb-3">
+            <p className="text-sm sm:text-base text-gray-600 mb-3">
               Ask me anything about your menstrual health, symptoms, or wellness tips.
             </p>
             {!isOnline && (
@@ -173,23 +172,23 @@ const ChatScreen: React.FC = () => {
       </div>
 
       {/* Input */}
-      <div className="bg-white border-t border-gray-200 p-4">
-        <div className="flex space-x-3">
+      <div className="bg-white border-t border-gray-200 p-3 sm:p-4">
+        <div className="flex space-x-2 sm:space-x-3">
           <input
             type="text"
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
             placeholder="Type your message..."
-            className="flex-1 p-3 border border-gray-200 rounded-full focus:ring-2 focus:ring-purple-400 focus:border-transparent"
+            className="flex-1 p-2 sm:p-3 border border-gray-200 rounded-full focus:ring-2 focus:ring-purple-400 focus:border-transparent text-base"
             disabled={isLoading}
           />
           <button
             onClick={sendMessage}
             disabled={!inputMessage.trim() || isLoading}
-            className="bg-gradient-to-r from-pink-400 to-purple-400 text-white p-3 rounded-full hover:shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:transform-none"
+            className="bg-gradient-to-r from-pink-400 to-purple-400 text-white p-2 sm:p-3 rounded-full hover:shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:transform-none min-w-[44px]"
           >
-            <span className="text-lg">→</span>
+            <span className="text-base sm:text-lg">→</span>
           </button>
         </div>
       </div>
