@@ -201,7 +201,7 @@ const DashboardScreen: React.FC = () => {
       </div>
 
       {/* Week Strip */}
-      <div className="px-6 -mt-4">
+      <div className="px-4 sm:px-6 -mt-4">
         <div className="bg-white rounded-2xl p-4 shadow-lg mb-6">
           <div className="flex justify-between items-center">
             {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
@@ -221,22 +221,22 @@ const DashboardScreen: React.FC = () => {
       </div>
 
       {/* Quick Actions */}
-      <div className="px-6 space-y-4 mb-20">
-        <h2 className="text-xl font-bold text-gray-800 mb-4">Quick Access</h2>
+      <div className="px-4 sm:px-6 space-y-4 mb-20">
+        <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-4">Quick Access</h2>
         
         {quickActions.map((action, index) => (
           <button
             key={index}
             onClick={action.onClick}
-            className="w-full bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+            className="w-full bg-white rounded-2xl p-4 sm:p-6 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
           >
             <div className="flex items-center space-x-4">
-              <div className={`w-12 h-12 bg-gradient-to-r ${action.color} rounded-xl flex items-center justify-center text-xl`}>
+              <div className={`w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r ${action.color} rounded-xl flex items-center justify-center text-lg sm:text-xl`}>
                 {action.icon}
               </div>
               <div className="text-left">
-                <h3 className="font-semibold text-gray-800">{action.title}</h3>
-                <p className="text-gray-600 text-sm">{action.subtitle}</p>
+                <h3 className="font-semibold text-gray-800 text-sm sm:text-base">{action.title}</h3>
+                <p className="text-gray-600 text-xs sm:text-sm">{action.subtitle}</p>
               </div>
               <div className="ml-auto text-gray-400">
                 →
@@ -247,7 +247,7 @@ const DashboardScreen: React.FC = () => {
       </div>
 
       {/* Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-6 py-4">
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 sm:px-6 py-4">
         <div className="flex justify-around">
           <button className="flex flex-col items-center space-y-1">
             <span className="text-purple-500 text-xl">🏠</span>
