@@ -463,7 +463,7 @@ const CyclesScreen: React.FC = () => {
                   <div className="text-xs text-gray-500 mb-2">Menstrual Flow</div>
                   <div className="flex gap-2">
                     {['none','light','medium','heavy'].map((opt) => (
-                      <button key={opt} type="button" onClick={() => setMenstrualFlow(opt as any)} className={`flex-1 p-2 rounded-lg border-2 capitalize ${menstrualFlow===opt ? 'border-pink-400 bg-pink-50 text-pink-800' : 'border-gray-200 text-gray-700 hover:border-gray-300'}`}>{opt}</button>
+                      <button key={opt} type="button" onClick={() => setMenstrualFlow(opt as 'light' | 'medium' | 'heavy' | 'none')} className={`flex-1 p-2 rounded-lg border-2 capitalize ${menstrualFlow===opt ? 'border-pink-400 bg-pink-50 text-pink-800' : 'border-gray-200 text-gray-700 hover:border-gray-300'}`}>{opt}</button>
                     ))}
                   </div>
                 </div>
