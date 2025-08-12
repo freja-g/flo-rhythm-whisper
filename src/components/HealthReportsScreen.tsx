@@ -393,13 +393,18 @@ const HealthReportsScreen: React.FC = () => {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={trendData}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="month" 
-                  fontSize={12}
+                <XAxis
+                  dataKey="month"
+                  fontSize={10}
+                  interval={0}
+                  angle={-45}
+                  textAnchor="end"
+                  height={60}
                 />
-                <YAxis 
+                <YAxis
                   domain={[0, 10]}
-                  fontSize={12}
+                  fontSize={10}
+                  width={40}
                 />
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <Bar 
