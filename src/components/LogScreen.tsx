@@ -182,7 +182,7 @@ const LogScreen: React.FC = () => {
               <button
                 key={option}
                 onClick={() => setMenstrualFlow(option as 'none' | 'light' | 'medium' | 'heavy')}
-                className={`flex-1 p-3 rounded-xl border-2 font-medium capitalize transition-all ${
+                className={`flex-1 p-2 sm:p-3 rounded-xl border-2 text-sm font-medium capitalize transition-all ${
                   menstrualFlow === option
                     ? 'border-pink-400 bg-pink-50 text-pink-800'
                     : 'border-gray-200 text-gray-700 hover:border-gray-300'
