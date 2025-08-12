@@ -35,7 +35,7 @@ const DashboardScreen: React.FC = () => {
     if (user) {
       fetchProfile();
     }
-  }, [user]);
+  }, [user, fetchProfile]);
 
   useEffect(() => {
     // Listen for profile updates to sync across components
@@ -47,7 +47,7 @@ const DashboardScreen: React.FC = () => {
 
     window.addEventListener('profile-updated', handleProfileUpdate);
     return () => window.removeEventListener('profile-updated', handleProfileUpdate);
-  }, [user]);
+  }, [user, fetchProfile]);
 
   const fetchProfile = useCallback(async () => {
     try {
