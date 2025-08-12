@@ -169,11 +169,11 @@ const DashboardScreen: React.FC = () => {
         </div>
       )}
       {/* Header */}
-      <div className="bg-gradient-to-r from-pink-400 to-purple-400 p-6 pb-8">
+      <div className="bg-gradient-to-r from-pink-400 to-purple-400 p-4 sm:p-6 pb-8">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-white">Welcome {profile.name}!</h1>
-            <p className="text-white/90">How are you feeling today?</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-white">Welcome {profile.name}!</h1>
+            <p className="text-sm sm:text-base text-white/90">How are you feeling today?</p>
           </div>
           <button
             onClick={() => setCurrentScreen('profile')}
@@ -191,10 +191,10 @@ const DashboardScreen: React.FC = () => {
         {/* Period Prediction */}
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 text-center">
           <div className="text-3xl mb-2">🌸</div>
-          <h3 className="text-lg font-semibold text-gray-800 mb-1">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-1">
             Period Prediction
           </h3>
-          <p className="text-gray-600">
+          <p className="text-sm sm:text-base text-gray-600">
             Your period starts in <span className="font-bold text-purple-600">{daysUntilPeriod} days</span>
           </p>
         </div>
