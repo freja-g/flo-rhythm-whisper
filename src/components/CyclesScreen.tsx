@@ -380,7 +380,7 @@ const CyclesScreen: React.FC = () => {
               />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Cycle Length (days)
@@ -391,7 +391,7 @@ const CyclesScreen: React.FC = () => {
                   max="35"
                   value={cycleLength}
                   onChange={(e) => setCycleLength(Number(e.target.value))}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+                  className="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-base"
                 />
               </div>
 
@@ -405,7 +405,7 @@ const CyclesScreen: React.FC = () => {
                   max="10"
                   value={periodLength}
                   onChange={(e) => setPeriodLength(Number(e.target.value))}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+                  className="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-base"
                 />
               </div>
             </div>
