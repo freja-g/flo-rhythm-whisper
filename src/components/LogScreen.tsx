@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
@@ -162,7 +161,7 @@ const LogScreen: React.FC = () => {
             {['none', 'light', 'heavy'].map((option) => (
               <button
                 key={option}
-                onClick={() => setSpotting(option as any)}
+                onClick={() => setSpotting(option as 'none' | 'light' | 'heavy')}
                 className={`flex-1 p-3 rounded-xl border-2 font-medium capitalize transition-all ${
                   spotting === option
                     ? 'border-purple-400 bg-purple-50 text-purple-800'
@@ -182,7 +181,7 @@ const LogScreen: React.FC = () => {
             {['none', 'light', 'medium', 'heavy'].map((option) => (
               <button
                 key={option}
-                onClick={() => setMenstrualFlow(option as any)}
+                onClick={() => setMenstrualFlow(option as 'none' | 'light' | 'medium' | 'heavy')}
                 className={`flex-1 p-3 rounded-xl border-2 font-medium capitalize transition-all ${
                   menstrualFlow === option
                     ? 'border-pink-400 bg-pink-50 text-pink-800'
