@@ -162,7 +162,7 @@ const LogScreen: React.FC = () => {
               <button
                 key={option}
                 onClick={() => setSpotting(option as 'none' | 'light' | 'heavy')}
-                className={`flex-1 p-3 rounded-xl border-2 font-medium capitalize transition-all ${
+                className={`flex-1 p-2 sm:p-3 rounded-xl border-2 text-sm font-medium capitalize transition-all ${
                   spotting === option
                     ? 'border-purple-400 bg-purple-50 text-purple-800'
                     : 'border-gray-200 text-gray-700 hover:border-gray-300'
