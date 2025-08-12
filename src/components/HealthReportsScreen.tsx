@@ -387,9 +387,9 @@ const HealthReportsScreen: React.FC = () => {
         </div>
 
         {/* Period Length Chart */}
-        <div className="bg-white rounded-2xl p-6 shadow-lg mb-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Period Length Comparison</h3>
-          <ChartContainer config={chartConfig} className="h-64">
+        <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg mb-6">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-4">Period Length Comparison</h3>
+          <ChartContainer config={chartConfig} className="h-48 sm:h-64 md:h-72">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={trendData}>
                 <CartesianGrid strokeDasharray="3 3" />
