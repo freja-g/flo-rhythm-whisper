@@ -263,6 +263,24 @@ const HealthReportsScreen: React.FC = () => {
   if (longPeriods > 0) anomalies.push(`${longPeriods} cycle(s) with period length > 7 days`);
   if (consecutiveCycleLengths.some((len) => len >= 90)) anomalies.push('One or more cycles ≥ 90 days');
 
+  // Doctor advice generation
+  const doctorAdvice: string[] = [];
+  if (averageStats.cycleVariability > 7) {
+    doctorAdvice.push('High cycle variability detected');
+  }
+  if (averageStats.avgCycleLength < 21 || averageStats.avgCycleLength > 35) {
+    doctorAdvice.push('Cycle length outside normal range');
+  }
+  if (longPeriods > sortedCycles.length * 0.3) {
+    doctorAdvice.push('Frequent long periods observed');
+  }
+  if (consecutiveCycleLengths.some(len => len < 21)) {
+    doctorAdvice.push('Short cycles detected');
+  }
+  if (consecutiveCycleLengths.some(len => len > 45)) {
+    doctorAdvice.push('Very long cycles detected');
+  }
+
   const report = [
     'Health Report Summary',
     `Average cycle length: ${averageStats.avgCycleLength} days`,
@@ -499,6 +517,143 @@ const HealthReportsScreen: React.FC = () => {
           <DoctorAdviceRenderer advice={doctorAdvice} />
         </section>
 
+        {/* Detailed Health Analysis */}
+        <section className="bg-white rounded-2xl p-6 shadow-lg mt-6">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">Detailed Health Analysis</h3>
+
+          {/* Cycle Regularity Analysis */}
+          <div className="mb-6">
+            <h4 className="font-medium text-gray-700 mb-3">Cycle Regularity Assessment</h4>
+            <div className="bg-gray-50 rounded-lg p-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <div className="text-sm text-gray-600">Regularity Score</div>
+                  <div className="text-lg font-semibold">
+                    {averageStats.cycleVariability <= 2 ? '🟢 Excellent' :
+                     averageStats.cycleVariability <= 5 ? '🟡 Good' :
+                     averageStats.cycleVariability <= 8 ? '🟠 Fair' : '🔴 Irregular'}
+                  </div>
+                  <div className="text-xs text-gray-500">Variability: ±{averageStats.cycleVariability} days</div>
+                </div>
+                <div>
+                  <div className="text-sm text-gray-600">Consistency Rating</div>
+                  <div className="text-lg font-semibold">
+                    {coefVar < 5 ? 'Very Consistent' :
+                     coefVar < 10 ? 'Consistent' :
+                     coefVar < 15 ? 'Moderately Variable' : 'Highly Variable'}
+                  </div>
+                  <div className="text-xs text-gray-500">CV: {coefVar.toFixed(1)}%</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Period Flow Analysis */}
+          <div className="mb-6">
+            <h4 className="font-medium text-gray-700 mb-3">Period Flow Analysis</h4>
+            <div className="bg-gray-50 rounded-lg p-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-blue-600">
+                    {userSymptoms.filter(s => s.menstrualFlow === 'light').length}
+                  </div>
+                  <div className="text-xs text-gray-600">Light Flow Days</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-600">
+                    {userSymptoms.filter(s => s.menstrualFlow === 'medium').length}
+                  </div>
+                  <div className="text-xs text-gray-600">Medium Flow Days</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-red-600">
+                    {userSymptoms.filter(s => s.menstrualFlow === 'heavy').length}
+                  </div>
+                  <div className="text-xs text-gray-600">Heavy Flow Days</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Hormonal Health Indicators */}
+          <div className="mb-6">
+            <h4 className="font-medium text-gray-700 mb-3">Hormonal Health Indicators</h4>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                <span className="text-sm">Luteal Phase Length</span>
+                <span className="font-medium">
+                  {averageStats.avgCycleLength - 14 > 10 ?
+                    `~${Math.round(averageStats.avgCycleLength - 14)} days 🟢` :
+                    `~${Math.round(averageStats.avgCycleLength - 14)} days ⚠️`
+                  }
+                </span>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                <span className="text-sm">Ovulation Regularity</span>
+                <span className="font-medium">
+                  {averageStats.cycleVariability <= 3 ? 'Likely Regular 🟢' :
+                   averageStats.cycleVariability <= 7 ? 'Moderately Regular 🟡' : 'Irregular ⚠️'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                <span className="text-sm">Cycle Health Score</span>
+                <span className="font-medium">
+                  {(function() {
+                    let score = 100;
+                    if (averageStats.avgCycleLength < 21 || averageStats.avgCycleLength > 35) score -= 20;
+                    if (averageStats.cycleVariability > 5) score -= 15;
+                    if (averageStats.avgPeriodLength > 7) score -= 10;
+                    if (anomalies.length > 0) score -= 15;
+                    return score;
+                  })()}/100 {(function() {
+                    const score = (function() {
+                      let s = 100;
+                      if (averageStats.avgCycleLength < 21 || averageStats.avgCycleLength > 35) s -= 20;
+                      if (averageStats.cycleVariability > 5) s -= 15;
+                      if (averageStats.avgPeriodLength > 7) s -= 10;
+                      if (anomalies.length > 0) s -= 15;
+                      return s;
+                    })();
+                    return score >= 85 ? '🟢' : score >= 70 ? '🟡' : score >= 50 ? '🟠' : '🔴';
+                  })()}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Recommendations */}
+          <div>
+            <h4 className="font-medium text-gray-700 mb-3">Personalized Recommendations</h4>
+            <div className="space-y-2">
+              {averageStats.cycleVariability > 7 && (
+                <div className="p-3 bg-blue-50 rounded-lg border-l-4 border-blue-400">
+                  <p className="text-sm text-blue-800">📊 Track stress levels and sleep patterns - high variability may be linked to lifestyle factors</p>
+                </div>
+              )}
+              {averageStats.avgPeriodLength > 7 && (
+                <div className="p-3 bg-yellow-50 rounded-lg border-l-4 border-yellow-400">
+                  <p className="text-sm text-yellow-800">⏰ Consider tracking flow intensity - periods longer than 7 days may need medical evaluation</p>
+                </div>
+              )}
+              {averageStats.avgCycleLength < 21 && (
+                <div className="p-3 bg-orange-50 rounded-lg border-l-4 border-orange-400">
+                  <p className="text-sm text-orange-800">🔄 Short cycles may indicate hormonal imbalances - consider nutrition and exercise tracking</p>
+                </div>
+              )}
+              {averageStats.avgCycleLength > 35 && (
+                <div className="p-3 bg-red-50 rounded-lg border-l-4 border-red-400">
+                  <p className="text-sm text-red-800">📅 Long cycles may suggest PCOS or other conditions - medical consultation recommended</p>
+                </div>
+              )}
+              {anomalies.length === 0 && averageStats.cycleVariability <= 3 && (
+                <div className="p-3 bg-green-50 rounded-lg border-l-4 border-green-400">
+                  <p className="text-sm text-green-800">✨ Excellent cycle health! Continue current lifestyle and tracking habits</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+
         {/* Contact a Specialist */}
         <section className="bg-white rounded-2xl p-6 shadow-lg mt-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-2">Contact a Specialist</h3>
@@ -526,8 +681,6 @@ const HealthReportsScreen: React.FC = () => {
           </div>
         </section>
 
-        {/* Doctor Advice Renderer */}
-        <DoctorAdviceRenderer advice={doctorAdvice} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       </div>
 
