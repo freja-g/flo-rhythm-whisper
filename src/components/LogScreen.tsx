@@ -135,14 +135,14 @@ const LogScreen: React.FC = () => {
         </div>
 
         {/* Symptoms */}
-        <div className="bg-white rounded-2xl p-6 shadow-lg">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Any symptoms?</h3>
-          <div className="grid grid-cols-2 gap-3">
+        <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-4">Any symptoms?</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
             {symptomOptions.map((symptom) => (
               <button
                 key={symptom}
                 onClick={() => handleSymptomToggle(symptom)}
-                className={`p-3 rounded-xl border-2 text-sm font-medium transition-all ${
+                className={`p-2 sm:p-3 rounded-xl border-2 text-xs sm:text-sm font-medium transition-all ${
                   selectedSymptoms.includes(symptom)
                     ? 'border-pink-400 bg-pink-50 text-pink-800'
                     : 'border-gray-200 text-gray-700 hover:border-gray-300'
@@ -155,9 +155,9 @@ const LogScreen: React.FC = () => {
         </div>
 
         {/* Spotting */}
-        <div className="bg-white rounded-2xl p-6 shadow-lg">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Spotting</h3>
-          <div className="flex space-x-3">
+        <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-4">Spotting</h3>
+          <div className="flex space-x-2 sm:space-x-3">
             {['none', 'light', 'heavy'].map((option) => (
               <button
                 key={option}
@@ -175,9 +175,9 @@ const LogScreen: React.FC = () => {
         </div>
 
         {/* Menstrual Flow */}
-        <div className="bg-white rounded-2xl p-6 shadow-lg">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Menstrual Flow</h3>
-          <div className="flex space-x-3">
+        <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-4">Menstrual Flow</h3>
+          <div className="flex space-x-2 sm:space-x-3">
             {['none', 'light', 'medium', 'heavy'].map((option) => (
               <button
                 key={option}
