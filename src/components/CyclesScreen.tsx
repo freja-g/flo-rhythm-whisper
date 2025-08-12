@@ -350,8 +350,8 @@ const CyclesScreen: React.FC = () => {
         )}
 
         {/* Add New Cycle */}
-        <div id="cycle-form" className="bg-white rounded-2xl p-6 shadow-lg mt-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">
+        <div id="cycle-form" className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg mt-6">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-4">
             {sortedCycles.length === 0 ? 'Start Tracking Your Cycle' : 'Add New Cycle'}
           </h3>
           
@@ -364,7 +364,7 @@ const CyclesScreen: React.FC = () => {
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+                className="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-base"
               />
             </div>
 
@@ -376,7 +376,7 @@ const CyclesScreen: React.FC = () => {
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+                className="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-base"
               />
             </div>
 
