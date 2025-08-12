@@ -56,7 +56,7 @@ const ProfileScreen: React.FC = () => {
     return () => window.removeEventListener('profile-updated', handleProfileUpdate);
   }, [user]);
 
-  const fetchProfile = async () => {
+  const fetchProfile = useCallback(async () => {
     try {
       if (!navigator.onLine) {
         // Use offline data when offline
@@ -96,7 +96,7 @@ const ProfileScreen: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id]);
 
   if (!user || loading) return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50 flex items-center justify-center">
