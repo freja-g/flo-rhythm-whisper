@@ -418,7 +418,7 @@ const HealthReportsScreen: React.FC = () => {
         </div>
 
         {/* Health Insights */}
-        <div className="bg-white rounded-2xl p-6 shadow-lg">
+        <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">Health Insights</h3>
           <div className="space-y-4">
             {insights.map((insight, index) => (
