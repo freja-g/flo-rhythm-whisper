@@ -180,11 +180,11 @@ const HealthReportsScreen: React.FC = () => {
         <div className="p-4 sm:p-6">
           <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-lg text-center">
             <div className="text-6xl mb-4">📊</div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">Not Enough Data</h3>
-            <p className="text-gray-600 mb-4">
+            <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">Not Enough Data</h3>
+            <p className="text-sm sm:text-base text-gray-600 mb-4">
               You need at least 5 recorded cycles to view health trends and insights.
             </p>
-            <p className="text-gray-500 mb-6">
+            <p className="text-sm sm:text-base text-gray-500 mb-6">
               Current cycles: {sortedCycles.length}/5
             </p>
             <button
