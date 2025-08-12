@@ -423,9 +423,9 @@ const CyclesScreen: React.FC = () => {
                       key={m.name}
                       type="button"
                       onClick={() => setSelectedMood(m.name)}
-                      className={`p-2 rounded-lg border-2 ${selectedMood === m.name ? 'border-purple-400 bg-purple-50' : 'border-gray-200 hover:border-gray-300'}`}
+                      className={`p-2 sm:p-3 rounded-lg border-2 ${selectedMood === m.name ? 'border-purple-400 bg-purple-50' : 'border-gray-200 hover:border-gray-300'}`}
                     >
-                      <div className="text-xl">{m.emoji}</div>
+                      <div className="text-lg sm:text-xl">{m.emoji}</div>
                       <div className="text-xs text-gray-700">{m.name}</div>
                     </button>
                   ))}
