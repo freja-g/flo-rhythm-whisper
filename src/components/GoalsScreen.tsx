@@ -30,7 +30,7 @@ const GoalsScreen: React.FC = () => {
     if (user) {
       fetchGoals();
     }
-  }, [user]);
+  }, [user, fetchGoals]);
 
   const fetchGoals = useCallback(async () => {
     try {
