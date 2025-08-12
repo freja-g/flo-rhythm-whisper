@@ -23,7 +23,7 @@ const DoctorAdviceRenderer: React.FC<{ advice: string[] }> = ({ advice }) => (
 const HealthReportsScreen: React.FC = () => {
   const { cycles, symptoms, setCurrentScreen } = useApp();
   const { user } = useAuth();
-  const [trendData, setTrendData] = useState<any[]>([]);
+  const [trendData, setTrendData] = useState<{ name: string; cycles: number; periods: number; }[]>([]);
   const [averageStats, setAverageStats] = useState({
     avgCycleLength: 0,
     avgPeriodLength: 0,
