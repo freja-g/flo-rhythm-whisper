@@ -238,7 +238,7 @@ const CyclesScreen: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50">
       {/* Header */}
-      <div className="bg-gradient-to-r from-pink-400 to-purple-400 p-6">
+      <div className="bg-gradient-to-r from-pink-400 to-purple-400 p-4 sm:p-6">
         <div className="flex items-center space-x-4">
           <button
             onClick={() => setCurrentScreen('dashboard')}
@@ -247,18 +247,18 @@ const CyclesScreen: React.FC = () => {
             ←
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-white">Cycles</h1>
-            <p className="text-white/90">Track your menstrual cycle</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-white">Cycles</h1>
+            <p className="text-sm sm:text-base text-white/90">Track your menstrual cycle</p>
           </div>
         </div>
       </div>
 
-      <div className="p-6 pb-24">
+      <div className="p-4 sm:p-6 pb-24">
         {sortedCycles.length === 0 ? (
-          <div className="bg-white rounded-2xl p-8 shadow-lg text-center">
+          <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-lg text-center">
             <div className="text-6xl mb-4">📅</div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">No Cycles Yet</h3>
-            <p className="text-gray-600 mb-4">Start tracking your menstrual cycle to see history here</p>
+            <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">No Cycles Yet</h3>
+            <p className="text-sm sm:text-base text-gray-600 mb-4">Start tracking your menstrual cycle to see history here</p>
             <button
               onClick={() => {
                 const today = new Date().toISOString().split('T')[0];
@@ -274,8 +274,8 @@ const CyclesScreen: React.FC = () => {
           <div className="space-y-6">
             {/* Current Cycle Info */}
             {sortedCycles.length > 0 && (
-              <div className="bg-white rounded-2xl p-6 shadow-lg">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Current Cycle Information</h3>
+              <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-4">Current Cycle Information</h3>
                 <div className="space-y-3">
                   <div className="flex justify-between py-2">
                     <span className="text-gray-600">Last Period Date</span>
@@ -294,8 +294,8 @@ const CyclesScreen: React.FC = () => {
             )}
 
             {/* Cycles History */}
-            <div className="bg-white rounded-2xl p-6 shadow-lg">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">Cycle History</h3>
+            <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-4">Cycle History</h3>
               <div className="space-y-4">
                 {sortedCycles.map((cycle, index) => (
                   <div key={cycle.id} className="border-l-4 border-pink-400 pl-4 py-3 bg-pink-50 rounded-r-lg">
