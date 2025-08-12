@@ -670,10 +670,12 @@ const HealthReportsScreen: React.FC = () => {
           <p className="text-sm text-gray-600 mb-4">This report is informational and not a diagnosis. If you have concerns or notice persistent anomalies, consider consulting a qualified healthcare professional.</p>
           <div className="flex gap-3">
             <a
-              href={`mailto:?subject=Cycle health report&body=${encodeURIComponent(report)}`}
+              href="https://my1health.com/search/providers/conditions/menstrual-irregularities/kenya"
+              target="_blank"
+              rel="noopener noreferrer"
               className="bg-gradient-to-r from-primary to-secondary text-white px-4 py-2 rounded-lg hover:shadow-md transition-all"
             >
-              Email this report
+              Contact Specialist
             </a>
             <button
               onClick={async () => {
