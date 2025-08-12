@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
@@ -456,7 +455,7 @@ const CyclesScreen: React.FC = () => {
                   <div className="text-xs text-gray-500 mb-2">Spotting</div>
                   <div className="flex gap-2">
                     {['none','light','heavy'].map((opt) => (
-                      <button key={opt} type="button" onClick={() => setSpotting(opt as any)} className={`flex-1 p-2 rounded-lg border-2 capitalize ${spotting===opt ? 'border-purple-400 bg-purple-50 text-purple-800' : 'border-gray-200 text-gray-700 hover:border-gray-300'}`}>{opt}</button>
+                      <button key={opt} type="button" onClick={() => setSpotting(opt as 'none' | 'light' | 'heavy')} className={`flex-1 p-2 rounded-lg border-2 capitalize ${spotting===opt ? 'border-purple-400 bg-purple-50 text-purple-800' : 'border-gray-200 text-gray-700 hover:border-gray-300'}`}>{opt}</button>
                     ))}
                   </div>
                 </div>
