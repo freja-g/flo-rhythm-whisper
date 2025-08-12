@@ -32,7 +32,7 @@ const GoalsScreen: React.FC = () => {
     }
   }, [user]);
 
-  const fetchGoals = async () => {
+  const fetchGoals = useCallback(async () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
@@ -53,7 +53,7 @@ const GoalsScreen: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
