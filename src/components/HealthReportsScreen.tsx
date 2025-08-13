@@ -414,7 +414,13 @@ const HealthReportsScreen: React.FC = () => {
             <ChartContainer config={chartConfig} className="h-56 sm:h-64 md:h-72 min-w-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={trendData} margin={{ top: 5, right: 15, left: 5, bottom: 65 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
+                  <defs>
+                    <linearGradient id="pinkGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#ec4899" />
+                      <stop offset="100%" stopColor="#f472b6" />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#fce7f3" strokeOpacity={0.8} />
                   <XAxis
                     dataKey="month"
                     fontSize={8}
@@ -422,19 +428,25 @@ const HealthReportsScreen: React.FC = () => {
                     angle={-45}
                     textAnchor="end"
                     height={70}
-                    tick={{ fontSize: 9 }}
+                    tick={{ fontSize: 9, fill: '#6b7280' }}
+                    axisLine={{ stroke: '#f3f4f6' }}
+                    tickLine={{ stroke: '#f3f4f6' }}
                   />
                   <YAxis
                     domain={[0, 10]}
                     fontSize={8}
                     width={35}
-                    tick={{ fontSize: 9 }}
+                    tick={{ fontSize: 9, fill: '#6b7280' }}
+                    axisLine={{ stroke: '#f3f4f6' }}
+                    tickLine={{ stroke: '#f3f4f6' }}
                   />
                   <ChartTooltip content={<ChartTooltipContent />} />
                   <Bar
                     dataKey="periodLength"
-                    fill="var(--color-periodLength)"
-                    radius={[3, 3, 0, 0]}
+                    fill="url(#pinkGradient)"
+                    radius={[6, 6, 0, 0]}
+                    stroke="#ffffff"
+                    strokeWidth={1}
                   />
                 </BarChart>
               </ResponsiveContainer>
