@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
+import { supabase } from '../integrations/supabase/client';
 
 const SignUpScreen: React.FC = () => {
   const { setCurrentScreen, currentScreen } = useApp();
