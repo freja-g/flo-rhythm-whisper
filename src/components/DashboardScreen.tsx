@@ -51,7 +51,8 @@ const DashboardScreen: React.FC = () => {
         offlineStorage.saveProfile(data);
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Catch block error:', error);
+      console.error('Error details:', JSON.stringify(error, null, 2));
       // Try to load from offline storage as fallback
       const offlineData = offlineStorage.getProfile(user?.id || '');
       if (offlineData) {
