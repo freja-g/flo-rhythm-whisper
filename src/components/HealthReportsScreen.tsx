@@ -391,28 +391,30 @@ const HealthReportsScreen: React.FC = () => {
         {/* Period Length Chart */}
         <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg mb-6">
           <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-4">Period Length Comparison</h3>
-          <ChartContainer config={chartConfig} className="h-48 sm:h-64 md:h-72">
+          <ChartContainer config={chartConfig} className="h-56 sm:h-64 md:h-72">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={trendData}>
+              <BarChart data={trendData} margin={{ top: 5, right: 10, left: 10, bottom: 60 }}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis
                   dataKey="month"
-                  fontSize={10}
+                  fontSize={9}
                   interval={0}
                   angle={-45}
                   textAnchor="end"
-                  height={60}
+                  height={70}
+                  tick={{ fontSize: 10 }}
                 />
                 <YAxis
                   domain={[0, 10]}
-                  fontSize={10}
-                  width={40}
+                  fontSize={9}
+                  width={45}
+                  tick={{ fontSize: 10 }}
                 />
                 <ChartTooltip content={<ChartTooltipContent />} />
-                <Bar 
-                  dataKey="periodLength" 
+                <Bar
+                  dataKey="periodLength"
                   fill="var(--color-periodLength)"
-                  radius={[4, 4, 0, 0]}
+                  radius={[3, 3, 0, 0]}
                 />
               </BarChart>
             </ResponsiveContainer>
