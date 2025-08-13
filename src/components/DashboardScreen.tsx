@@ -40,6 +40,15 @@ const DashboardScreen: React.FC = () => {
         console.error('Error fetching profile:', error.message || error);
         console.error('Full error details:', JSON.stringify(error, null, 2));
         console.error('User ID:', user?.id);
+
+        // Check if it's a "no rows" error (profile doesn't exist)
+        if (error.code === 'PGRST116' || error.message?.includes('no rows')) {
+          console.log('No profile found, redirecting to profile setup');
+          setProfile(null);
+          setLoading(false);
+          return;
+        }
+
         // Try to load from offline storage as fallback
         const offlineData = offlineStorage.getProfile(user?.id || '');
         if (offlineData) {
