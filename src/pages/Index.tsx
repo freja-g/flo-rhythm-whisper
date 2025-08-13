@@ -35,8 +35,8 @@ const AppContent: React.FC = () => {
     );
   }
 
-  // If user is not authenticated, only show splash or signup screens
-  if (!user && currentScreen !== 'splash' && currentScreen !== 'signup') {
+  // If user is not authenticated, only show splash, signup, or login screens
+  if (!user && currentScreen !== 'splash' && currentScreen !== 'signup' && currentScreen !== 'login') {
     return <SplashScreen />;
   }
 
