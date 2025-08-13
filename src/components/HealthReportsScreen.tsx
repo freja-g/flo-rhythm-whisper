@@ -685,19 +685,6 @@ const HealthReportsScreen: React.FC = () => {
             >
               Contact Specialist
             </a>
-            <button
-              onClick={async () => {
-                try {
-                  await navigator.clipboard.writeText(report);
-                  alert('Report copied to clipboard');
-                } catch (e) {
-                  console.error('Copy failed', e);
-                }
-              }}
-              className="border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-50 transition-all"
-            >
-              Copy report
-            </button>
           </div>
         </section>
 
