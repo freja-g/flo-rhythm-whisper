@@ -18,7 +18,7 @@ import HealthReportsScreen from '../components/HealthReportsScreen';
 import { FlowerLoading } from '../components/ui/flower-loading';
 
 const AppContent: React.FC = () => {
-  const { currentScreen } = useApp();
+  const { currentScreen, setCurrentScreen } = useApp();
   const { user, loading } = useAuth();
   
   // Enable keyboard visibility handling for mobile devices
