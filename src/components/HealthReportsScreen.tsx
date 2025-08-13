@@ -150,11 +150,11 @@ const HealthReportsScreen: React.FC = () => {
   const chartConfig = {
     cycleLength: {
       label: "Cycle Length",
-      color: "hsl(var(--primary))",
+      color: "#8b5cf6", // Modern purple
     },
     periodLength: {
-      label: "Period Length", 
-      color: "hsl(var(--destructive))",
+      label: "Period Length",
+      color: "#ec4899", // Modern pink
     },
   };
 
