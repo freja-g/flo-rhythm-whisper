@@ -35,10 +35,15 @@ const AppContent: React.FC = () => {
     );
   }
 
-  // If user is not authenticated, only show splash screen if we're not already on splash or signup
-  if (!user && currentScreen !== 'splash' && currentScreen !== 'signup') {
-    // Allow navigation to signup from splash, but redirect other screens to splash
-    return <SplashScreen />;
+  // If user is not authenticated, only allow splash and signup screens
+  if (!user) {
+    if (currentScreen === 'splash' || currentScreen === 'signup') {
+      // Allow these screens for unauthenticated users
+    } else {
+      // For any other screen, redirect to splash
+      setCurrentScreen('splash');
+      return <SplashScreen />;
+    }
   }
 
   const renderScreen = () => {
