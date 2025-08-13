@@ -37,7 +37,9 @@ const DashboardScreen: React.FC = () => {
         .single();
 
       if (error) {
-        console.error('Error fetching profile:', error);
+        console.error('Error fetching profile:', error.message || error);
+        console.error('Full error details:', JSON.stringify(error, null, 2));
+        console.error('User ID:', user?.id);
         // Try to load from offline storage as fallback
         const offlineData = offlineStorage.getProfile(user?.id || '');
         if (offlineData) {
