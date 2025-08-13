@@ -42,6 +42,7 @@ const SignUpScreen: React.FC = () => {
           console.error('Sign in error:', error);
           setError(typeof error === 'string' ? error : error.message || 'Sign in failed');
         } else {
+          // Navigate to dashboard after successful login
           setCurrentScreen('dashboard');
         }
       }
