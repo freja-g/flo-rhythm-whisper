@@ -3,9 +3,9 @@ import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 
 const SignUpScreen: React.FC = () => {
-  const { setCurrentScreen } = useApp();
+  const { setCurrentScreen, currentScreen } = useApp();
   const { signUp, signIn } = useAuth();
-  const [isSignUp, setIsSignUp] = useState(true);
+  const [isSignUp, setIsSignUp] = useState(currentScreen !== 'login');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
