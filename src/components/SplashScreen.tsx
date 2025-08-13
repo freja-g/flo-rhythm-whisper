@@ -25,7 +25,7 @@ const SplashScreen: React.FC = () => {
             Get Started
           </button>
           <button
-            onClick={() => setCurrentScreen('signup')}
+            onClick={() => setCurrentScreen('login')}
             className="w-full bg-transparent border-2 border-white text-white font-semibold py-4 px-8 rounded-full hover:bg-white hover:text-purple-600 transition-all duration-200"
           >
             I Already Have an Account
