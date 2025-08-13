@@ -34,11 +34,11 @@ const HealthReportsScreen: React.FC = () => {
     .filter(cycle => cycle.userId === user?.id)
     .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
 
-  const calculateTrends = () => {
+  const calculateTrends = useCallback(() => {
     const trends = sortedCycles.map((cycle, index) => {
       const cycleNumber = index + 1;
       let actualCycleLength = cycle.length;
-      
+
       // Calculate actual cycle length between consecutive cycles
       if (index < sortedCycles.length - 1) {
         const nextCycle = sortedCycles[index + 1];
@@ -55,7 +55,7 @@ const HealthReportsScreen: React.FC = () => {
     });
 
     setTrendData(trends);
-  };
+  }, [sortedCycles]);
 
   const calculateStats = () => {
     if (sortedCycles.length < 2) return;
