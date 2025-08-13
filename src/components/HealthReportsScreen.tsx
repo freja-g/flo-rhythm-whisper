@@ -363,7 +363,13 @@ const HealthReportsScreen: React.FC = () => {
             <ChartContainer config={chartConfig} className="h-56 sm:h-64 md:h-72 min-w-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={trendData} margin={{ top: 5, right: 15, left: 5, bottom: 65 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
+                  <defs>
+                    <linearGradient id="purpleGradient" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor="#8b5cf6" />
+                      <stop offset="100%" stopColor="#a855f7" />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" strokeOpacity={0.5} />
                   <XAxis
                     dataKey="month"
                     fontSize={8}
@@ -371,21 +377,26 @@ const HealthReportsScreen: React.FC = () => {
                     angle={-45}
                     textAnchor="end"
                     height={70}
-                    tick={{ fontSize: 9 }}
+                    tick={{ fontSize: 9, fill: '#6b7280' }}
+                    axisLine={{ stroke: '#d1d5db' }}
+                    tickLine={{ stroke: '#d1d5db' }}
                   />
                   <YAxis
                     domain={[20, 40]}
                     fontSize={8}
                     width={35}
-                    tick={{ fontSize: 9 }}
+                    tick={{ fontSize: 9, fill: '#6b7280' }}
+                    axisLine={{ stroke: '#d1d5db' }}
+                    tickLine={{ stroke: '#d1d5db' }}
                   />
                   <ChartTooltip content={<ChartTooltipContent />} />
                   <Line
                     type="monotone"
                     dataKey="cycleLength"
-                    stroke="var(--color-cycleLength)"
-                    strokeWidth={2}
-                    dot={{ fill: "var(--color-cycleLength)", strokeWidth: 1, r: 3 }}
+                    stroke="url(#purpleGradient)"
+                    strokeWidth={3}
+                    dot={{ fill: "#8b5cf6", strokeWidth: 2, r: 4, stroke: "#ffffff" }}
+                    activeDot={{ r: 6, fill: "#8b5cf6", stroke: "#ffffff", strokeWidth: 2 }}
                   />
                 </LineChart>
               </ResponsiveContainer>
