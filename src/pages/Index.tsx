@@ -46,6 +46,8 @@ const AppContent: React.FC = () => {
         return <SplashScreen />;
       case 'signup':
         return <SignUpScreen />;
+      case 'login':
+        return <SignUpScreen />;
       case 'profileSetup':
         return <ProfileSetupScreen />;
       case 'cycleSetup':
