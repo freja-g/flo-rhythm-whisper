@@ -389,8 +389,8 @@ const HealthReportsScreen: React.FC = () => {
         </div>
 
         {/* Period Length Chart */}
-        <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg mb-6">
-          <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-4">Period Length Comparison</h3>
+        <div className="bg-white rounded-2xl p-3 sm:p-4 md:p-6 shadow-lg mb-6">
+          <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">Period Length Comparison</h3>
           <ChartContainer config={chartConfig} className="h-56 sm:h-64 md:h-72">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={trendData} margin={{ top: 5, right: 10, left: 10, bottom: 60 }}>
