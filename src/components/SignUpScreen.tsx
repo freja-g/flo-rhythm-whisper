@@ -15,6 +15,19 @@ const SignUpScreen: React.FC = () => {
     password: ''
   });
 
+  useEffect(() => {
+    // Test Supabase connection
+    const testConnection = async () => {
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        console.log('Supabase connection test:', { data, error });
+      } catch (err) {
+        console.error('Supabase connection error:', err);
+      }
+    };
+    testConnection();
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
