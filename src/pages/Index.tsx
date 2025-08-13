@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { AppProvider, useApp } from '../context/AppContext';
 import { AuthProvider, useAuth } from '../context/AuthContext';
@@ -36,8 +35,9 @@ const AppContent: React.FC = () => {
     );
   }
 
-  // If user is not authenticated, show splash or signup screen
+  // If user is not authenticated, only show splash screen if we're not already on splash or signup
   if (!user && currentScreen !== 'splash' && currentScreen !== 'signup') {
+    // Allow navigation to signup from splash, but redirect other screens to splash
     return <SplashScreen />;
   }
 
