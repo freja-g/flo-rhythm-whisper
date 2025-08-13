@@ -393,34 +393,36 @@ const HealthReportsScreen: React.FC = () => {
         {/* Period Length Chart */}
         <div className="bg-white rounded-2xl p-3 sm:p-4 md:p-6 shadow-lg mb-6">
           <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">Period Length Comparison</h3>
-          <ChartContainer config={chartConfig} className="h-56 sm:h-64 md:h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={trendData} margin={{ top: 5, right: 10, left: 10, bottom: 60 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis
-                  dataKey="month"
-                  fontSize={9}
-                  interval={0}
-                  angle={-45}
-                  textAnchor="end"
-                  height={70}
-                  tick={{ fontSize: 10 }}
-                />
-                <YAxis
-                  domain={[0, 10]}
-                  fontSize={9}
-                  width={45}
-                  tick={{ fontSize: 10 }}
-                />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Bar
-                  dataKey="periodLength"
-                  fill="var(--color-periodLength)"
-                  radius={[3, 3, 0, 0]}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </ChartContainer>
+          <div className="overflow-x-auto">
+            <ChartContainer config={chartConfig} className="h-56 sm:h-64 md:h-72 min-w-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={trendData} margin={{ top: 5, right: 15, left: 5, bottom: 65 }}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="month"
+                    fontSize={8}
+                    interval={0}
+                    angle={-45}
+                    textAnchor="end"
+                    height={70}
+                    tick={{ fontSize: 9 }}
+                  />
+                  <YAxis
+                    domain={[0, 10]}
+                    fontSize={8}
+                    width={35}
+                    tick={{ fontSize: 9 }}
+                  />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Bar
+                    dataKey="periodLength"
+                    fill="var(--color-periodLength)"
+                    radius={[3, 3, 0, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </div>
         </div>
 
         {/* Health Insights */}
