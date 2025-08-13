@@ -34,28 +34,6 @@ const HealthReportsScreen: React.FC = () => {
     .filter(cycle => cycle.userId === user?.id)
     .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
 
-  useEffect(() => {
-    if (sortedCycles.length >= 5) {
-      calculateTrends();
-      calculateStats();
-    }
-  }, [cycles, calculateTrends, calculateStats, sortedCycles.length]);
-
-  // SEO: title and meta description
-  useEffect(() => {
-    document.title = 'Health Reports: Expert Analysis';
-    const desc = 'Expert menstrual health insights, trends, and specialist contact.';
-    const metaDesc = document.querySelector('meta[name="description"]') as HTMLMetaElement | null;
-    if (metaDesc) {
-      metaDesc.setAttribute('content', desc);
-    } else {
-      const m = document.createElement('meta');
-      m.name = 'description';
-      m.content = desc;
-      document.head.appendChild(m);
-    }
-  }, []);
-
   const calculateTrends = () => {
     const trends = sortedCycles.map((cycle, index) => {
       const cycleNumber = index + 1;
