@@ -354,8 +354,11 @@ const HealthReportsScreen: React.FC = () => {
         </div>
 
         {/* Cycle Length Trend Chart */}
-        <div className="bg-white rounded-2xl p-3 sm:p-4 md:p-6 shadow-lg mb-6">
-          <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">Cycle Length Trends</h3>
+        <div className="bg-gradient-to-br from-white to-purple-50 rounded-2xl p-3 sm:p-4 md:p-6 shadow-lg border border-purple-100 mb-6">
+          <div className="flex items-center mb-3 sm:mb-4">
+            <div className="w-3 h-3 bg-gradient-to-r from-purple-500 to-violet-600 rounded-full mr-3"></div>
+            <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-800">Cycle Length Trends</h3>
+          </div>
           <div className="overflow-x-auto">
             <ChartContainer config={chartConfig} className="h-56 sm:h-64 md:h-72 min-w-[300px]">
               <ResponsiveContainer width="100%" height="100%">
