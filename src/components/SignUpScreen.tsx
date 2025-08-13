@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
@@ -24,19 +23,24 @@ const SignUpScreen: React.FC = () => {
       if (isSignUp) {
         const { data, error } = await signUp(formData.email, formData.password, formData.name);
         if (error) {
-          setError(error.message);
-        } else if (data.session) {
+          console.error('Sign up error:', error);
+          setError(typeof error === 'string' ? error : error.message || 'Sign up failed');
+        } else if (data?.session) {
           // User is automatically logged in (email confirmation disabled)
           setCurrentScreen('profileSetup');
-        } else {
+        } else if (data?.user && !data?.session) {
           // Email confirmation required
           setError('Please check your email to confirm your account, then sign in.');
           setIsSignUp(false); // Switch to sign in mode
+        } else {
+          setError('Sign up successful! Please sign in.');
+          setIsSignUp(false);
         }
       } else {
         const { error } = await signIn(formData.email, formData.password);
         if (error) {
-          setError(error.message);
+          console.error('Sign in error:', error);
+          setError(typeof error === 'string' ? error : error.message || 'Sign in failed');
         } else {
           setCurrentScreen('dashboard');
         }
