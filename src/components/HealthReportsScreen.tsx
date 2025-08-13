@@ -86,7 +86,7 @@ const HealthReportsScreen: React.FC = () => {
       calculateTrends();
       calculateStats();
     }
-  }, [cycles, calculateTrends, calculateStats, sortedCycles.length]);
+  }, [calculateTrends, calculateStats, sortedCycles.length]);
 
   // SEO: title and meta description
   useEffect(() => {
