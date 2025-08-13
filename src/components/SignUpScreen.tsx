@@ -56,8 +56,23 @@ const SignUpScreen: React.FC = () => {
           console.error('Sign in error:', error);
           setError(typeof error === 'string' ? error : error.message || 'Sign in failed');
         } else {
-          // Navigate to dashboard after successful login
-          setCurrentScreen('dashboard');
+          // Check if user has completed profile setup
+          try {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', supabase.auth.getUser().then(({data}) => data.user?.id))
+              .single();
+
+            if (profile && profile.name) {
+              setCurrentScreen('dashboard');
+            } else {
+              setCurrentScreen('profileSetup');
+            }
+          } catch (err) {
+            // If no profile found, go to profile setup
+            setCurrentScreen('profileSetup');
+          }
         }
       }
     } catch (err) {
