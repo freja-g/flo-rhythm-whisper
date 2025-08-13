@@ -18,37 +18,6 @@ const DashboardScreen: React.FC = () => {
   const offlineStorage = OfflineStorageService.getInstance();
   const { notificationsEnabled, enableNotifications } = useNotifications(profile);
 
-  useEffect(() => {
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
-
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (user) {
-      fetchProfile();
-    }
-  }, [user, fetchProfile]);
-
-  useEffect(() => {
-    // Listen for profile updates to sync across components
-    const handleProfileUpdate = () => {
-      if (user) {
-        fetchProfile();
-      }
-    };
-
-    window.addEventListener('profile-updated', handleProfileUpdate);
-    return () => window.removeEventListener('profile-updated', handleProfileUpdate);
-  }, [user, fetchProfile]);
-
   const fetchProfile = useCallback(async () => {
     try {
       if (!navigator.onLine) {
