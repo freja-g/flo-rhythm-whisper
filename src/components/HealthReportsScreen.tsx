@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import { formatDate, getDaysBetween } from '../utils/dateUtils';
@@ -34,33 +34,11 @@ const HealthReportsScreen: React.FC = () => {
     .filter(cycle => cycle.userId === user?.id)
     .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
 
-  useEffect(() => {
-    if (sortedCycles.length >= 5) {
-      calculateTrends();
-      calculateStats();
-    }
-  }, [cycles, calculateTrends, calculateStats, sortedCycles.length]);
-
-  // SEO: title and meta description
-  useEffect(() => {
-    document.title = 'Health Reports: Expert Analysis';
-    const desc = 'Expert menstrual health insights, trends, and specialist contact.';
-    const metaDesc = document.querySelector('meta[name="description"]') as HTMLMetaElement | null;
-    if (metaDesc) {
-      metaDesc.setAttribute('content', desc);
-    } else {
-      const m = document.createElement('meta');
-      m.name = 'description';
-      m.content = desc;
-      document.head.appendChild(m);
-    }
-  }, []);
-
-  const calculateTrends = () => {
+  const calculateTrends = useCallback(() => {
     const trends = sortedCycles.map((cycle, index) => {
       const cycleNumber = index + 1;
       let actualCycleLength = cycle.length;
-      
+
       // Calculate actual cycle length between consecutive cycles
       if (index < sortedCycles.length - 1) {
         const nextCycle = sortedCycles[index + 1];
@@ -77,9 +55,9 @@ const HealthReportsScreen: React.FC = () => {
     });
 
     setTrendData(trends);
-  };
+  }, [sortedCycles]);
 
-  const calculateStats = () => {
+  const calculateStats = useCallback(() => {
     if (sortedCycles.length < 2) return;
 
     // Calculate cycle lengths between consecutive cycles
@@ -91,7 +69,7 @@ const HealthReportsScreen: React.FC = () => {
 
     const avgCycleLength = cycleLengths.reduce((sum, length) => sum + length, 0) / cycleLengths.length;
     const avgPeriodLength = sortedCycles.reduce((sum, cycle) => sum + (cycle.periodLength || 0), 0) / sortedCycles.length;
-    
+
     // Calculate variability (standard deviation)
     const variance = cycleLengths.reduce((sum, length) => sum + Math.pow(length - avgCycleLength, 2), 0) / cycleLengths.length;
     const cycleVariability = Math.sqrt(variance);
@@ -101,7 +79,29 @@ const HealthReportsScreen: React.FC = () => {
       avgPeriodLength: Math.round(avgPeriodLength * 10) / 10,
       cycleVariability: Math.round(cycleVariability * 10) / 10
     });
-  };
+  }, [sortedCycles]);
+
+  useEffect(() => {
+    if (sortedCycles.length >= 5) {
+      calculateTrends();
+      calculateStats();
+    }
+  }, [calculateTrends, calculateStats, sortedCycles.length]);
+
+  // SEO: title and meta description
+  useEffect(() => {
+    document.title = 'Health Reports: Expert Analysis';
+    const desc = 'Expert menstrual health insights, trends, and specialist contact.';
+    const metaDesc = document.querySelector('meta[name="description"]') as HTMLMetaElement | null;
+    if (metaDesc) {
+      metaDesc.setAttribute('content', desc);
+    } else {
+      const m = document.createElement('meta');
+      m.name = 'description';
+      m.content = desc;
+      document.head.appendChild(m);
+    }
+  }, []);
 
   const getHealthInsights = () => {
     if (sortedCycles.length < 5) return [];
@@ -150,11 +150,11 @@ const HealthReportsScreen: React.FC = () => {
   const chartConfig = {
     cycleLength: {
       label: "Cycle Length",
-      color: "hsl(var(--primary))",
+      color: "#8b5cf6", // Modern purple
     },
     periodLength: {
-      label: "Period Length", 
-      color: "hsl(var(--destructive))",
+      label: "Period Length",
+      color: "#ec4899", // Modern pink
     },
   };
 
@@ -354,67 +354,104 @@ const HealthReportsScreen: React.FC = () => {
         </div>
 
         {/* Cycle Length Trend Chart */}
-        <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg mb-6">
-          <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-4">Cycle Length Trends</h3>
-          <ChartContainer config={chartConfig} className="h-48 sm:h-64 md:h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={trendData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis
-                  dataKey="month"
-                  fontSize={10}
-                  interval={0}
-                  angle={-45}
-                  textAnchor="end"
-                  height={60}
-                />
-                <YAxis
-                  domain={[20, 40]}
-                  fontSize={10}
-                  width={40}
-                />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Line 
-                  type="monotone" 
-                  dataKey="cycleLength" 
-                  stroke="var(--color-cycleLength)"
-                  strokeWidth={3}
-                  dot={{ fill: "var(--color-cycleLength)", strokeWidth: 2, r: 5 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </ChartContainer>
+        <div className="bg-gradient-to-br from-white to-purple-50 rounded-2xl p-3 sm:p-4 md:p-6 shadow-lg border border-purple-100 mb-6">
+          <div className="flex items-center mb-3 sm:mb-4">
+            <div className="w-3 h-3 bg-gradient-to-r from-purple-500 to-violet-600 rounded-full mr-3"></div>
+            <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-800">Cycle Length Trends</h3>
+          </div>
+          <div className="overflow-x-auto">
+            <ChartContainer config={chartConfig} className="h-56 sm:h-64 md:h-72 min-w-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={trendData} margin={{ top: 5, right: 15, left: 5, bottom: 65 }}>
+                  <defs>
+                    <linearGradient id="purpleGradient" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor="#8b5cf6" />
+                      <stop offset="100%" stopColor="#a855f7" />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" strokeOpacity={0.5} />
+                  <XAxis
+                    dataKey="month"
+                    fontSize={8}
+                    interval={0}
+                    angle={-45}
+                    textAnchor="end"
+                    height={70}
+                    tick={{ fontSize: 9, fill: '#6b7280' }}
+                    axisLine={{ stroke: '#d1d5db' }}
+                    tickLine={{ stroke: '#d1d5db' }}
+                  />
+                  <YAxis
+                    domain={[20, 40]}
+                    fontSize={8}
+                    width={35}
+                    tick={{ fontSize: 9, fill: '#6b7280' }}
+                    axisLine={{ stroke: '#d1d5db' }}
+                    tickLine={{ stroke: '#d1d5db' }}
+                  />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Line
+                    type="monotone"
+                    dataKey="cycleLength"
+                    stroke="url(#purpleGradient)"
+                    strokeWidth={3}
+                    dot={{ fill: "#8b5cf6", strokeWidth: 2, r: 4, stroke: "#ffffff" }}
+                    activeDot={{ r: 6, fill: "#8b5cf6", stroke: "#ffffff", strokeWidth: 2 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </div>
         </div>
 
         {/* Period Length Chart */}
-        <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg mb-6">
-          <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-4">Period Length Comparison</h3>
-          <ChartContainer config={chartConfig} className="h-48 sm:h-64 md:h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={trendData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis
-                  dataKey="month"
-                  fontSize={10}
-                  interval={0}
-                  angle={-45}
-                  textAnchor="end"
-                  height={60}
-                />
-                <YAxis
-                  domain={[0, 10]}
-                  fontSize={10}
-                  width={40}
-                />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Bar 
-                  dataKey="periodLength" 
-                  fill="var(--color-periodLength)"
-                  radius={[4, 4, 0, 0]}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </ChartContainer>
+        <div className="bg-gradient-to-br from-white to-pink-50 rounded-2xl p-3 sm:p-4 md:p-6 shadow-lg border border-pink-100 mb-6">
+          <div className="flex items-center mb-3 sm:mb-4">
+            <div className="w-3 h-3 bg-gradient-to-r from-pink-500 to-rose-500 rounded-full mr-3"></div>
+            <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-800">Period Length Comparison</h3>
+          </div>
+          <div className="overflow-x-auto">
+            <ChartContainer config={chartConfig} className="h-56 sm:h-64 md:h-72 min-w-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={trendData} margin={{ top: 5, right: 15, left: 5, bottom: 65 }}>
+                  <defs>
+                    <linearGradient id="pinkGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#ec4899" />
+                      <stop offset="100%" stopColor="#f472b6" />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#fce7f3" strokeOpacity={0.8} />
+                  <XAxis
+                    dataKey="month"
+                    fontSize={8}
+                    interval={0}
+                    angle={-45}
+                    textAnchor="end"
+                    height={70}
+                    tick={{ fontSize: 9, fill: '#6b7280' }}
+                    axisLine={{ stroke: '#f3f4f6' }}
+                    tickLine={{ stroke: '#f3f4f6' }}
+                  />
+                  <YAxis
+                    domain={[0, 10]}
+                    fontSize={8}
+                    width={35}
+                    tick={{ fontSize: 9, fill: '#6b7280' }}
+                    axisLine={{ stroke: '#f3f4f6' }}
+                    tickLine={{ stroke: '#f3f4f6' }}
+                  />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Bar
+                    dataKey="periodLength"
+                    fill="url(#pinkGradient)"
+                    radius={[6, 6, 0, 0]}
+                    stroke="#ffffff"
+                    strokeWidth={1}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </div>
         </div>
 
         {/* Health Insights */}
@@ -677,19 +714,6 @@ const HealthReportsScreen: React.FC = () => {
             >
               Contact Specialist
             </a>
-            <button
-              onClick={async () => {
-                try {
-                  await navigator.clipboard.writeText(report);
-                  alert('Report copied to clipboard');
-                } catch (e) {
-                  console.error('Copy failed', e);
-                }
-              }}
-              className="border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-50 transition-all"
-            >
-              Copy report
-            </button>
           </div>
         </section>
 

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useApp } from '../context/AppContext';
 
@@ -23,7 +22,13 @@ const SplashScreen: React.FC = () => {
             onClick={() => setCurrentScreen('signup')}
             className="w-full bg-white text-purple-600 font-semibold py-4 px-8 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
           >
-            Start Now
+            Get Started
+          </button>
+          <button
+            onClick={() => setCurrentScreen('login')}
+            className="w-full bg-transparent border-2 border-white text-white font-semibold py-4 px-8 rounded-full hover:bg-white hover:text-purple-600 transition-all duration-200"
+          >
+            I Already Have an Account
           </button>
         </div>
       </div>

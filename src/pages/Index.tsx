@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { AppProvider, useApp } from '../context/AppContext';
 import { AuthProvider, useAuth } from '../context/AuthContext';
@@ -19,7 +18,7 @@ import HealthReportsScreen from '../components/HealthReportsScreen';
 import { FlowerLoading } from '../components/ui/flower-loading';
 
 const AppContent: React.FC = () => {
-  const { currentScreen } = useApp();
+  const { currentScreen, setCurrentScreen } = useApp();
   const { user, loading } = useAuth();
   
   // Enable keyboard visibility handling for mobile devices
@@ -36,8 +35,8 @@ const AppContent: React.FC = () => {
     );
   }
 
-  // If user is not authenticated, show splash or signup screen
-  if (!user && currentScreen !== 'splash' && currentScreen !== 'signup') {
+  // If user is not authenticated, only show splash, signup, or login screens
+  if (!user && currentScreen !== 'splash' && currentScreen !== 'signup' && currentScreen !== 'login') {
     return <SplashScreen />;
   }
 
@@ -46,6 +45,8 @@ const AppContent: React.FC = () => {
       case 'splash':
         return <SplashScreen />;
       case 'signup':
+        return <SignUpScreen />;
+      case 'login':
         return <SignUpScreen />;
       case 'profileSetup':
         return <ProfileSetupScreen />;

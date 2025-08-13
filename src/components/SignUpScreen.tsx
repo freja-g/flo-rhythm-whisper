@@ -1,12 +1,12 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
+import { supabase } from '../integrations/supabase/client';
 
 const SignUpScreen: React.FC = () => {
-  const { setCurrentScreen } = useApp();
+  const { setCurrentScreen, currentScreen } = useApp();
   const { signUp, signIn } = useAuth();
-  const [isSignUp, setIsSignUp] = useState(true);
+  const [isSignUp, setIsSignUp] = useState(currentScreen !== 'login');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
@@ -14,6 +14,19 @@ const SignUpScreen: React.FC = () => {
     email: '',
     password: ''
   });
+
+  useEffect(() => {
+    // Test Supabase connection
+    const testConnection = async () => {
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        console.log('Supabase connection test:', { data, error });
+      } catch (err) {
+        console.error('Supabase connection error:', err);
+      }
+    };
+    testConnection();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,20 +37,26 @@ const SignUpScreen: React.FC = () => {
       if (isSignUp) {
         const { data, error } = await signUp(formData.email, formData.password, formData.name);
         if (error) {
-          setError(error.message);
-        } else if (data.session) {
+          console.error('Sign up error:', error);
+          setError(typeof error === 'string' ? error : error.message || 'Sign up failed');
+        } else if (data?.session) {
           // User is automatically logged in (email confirmation disabled)
           setCurrentScreen('profileSetup');
-        } else {
+        } else if (data?.user && !data?.session) {
           // Email confirmation required
           setError('Please check your email to confirm your account, then sign in.');
           setIsSignUp(false); // Switch to sign in mode
+        } else {
+          setError('Sign up successful! Please sign in.');
+          setIsSignUp(false);
         }
       } else {
         const { error } = await signIn(formData.email, formData.password);
         if (error) {
-          setError(error.message);
+          console.error('Sign in error:', error);
+          setError(typeof error === 'string' ? error : error.message || 'Sign in failed');
         } else {
+          // Navigate to dashboard - it will handle profile setup redirect if needed
           setCurrentScreen('dashboard');
         }
       }

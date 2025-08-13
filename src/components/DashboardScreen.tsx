@@ -18,6 +18,60 @@ const DashboardScreen: React.FC = () => {
   const offlineStorage = OfflineStorageService.getInstance();
   const { notificationsEnabled, enableNotifications } = useNotifications(profile);
 
+  const fetchProfile = useCallback(async () => {
+    try {
+      if (!navigator.onLine) {
+        // Use offline data when offline
+        const offlineData = offlineStorage.getProfile(user?.id || '');
+        if (offlineData) {
+          setProfile(offlineData);
+        }
+        setLoading(false);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user?.id)
+        .single();
+
+      if (error) {
+        console.error('Error fetching profile:', error.message || error);
+        console.error('Full error details:', JSON.stringify(error, null, 2));
+        console.error('User ID:', user?.id);
+
+        // Check if it's a "no rows" error (profile doesn't exist)
+        if (error.code === 'PGRST116' || error.message?.includes('no rows')) {
+          console.log('No profile found, redirecting to profile setup');
+          setProfile(null);
+          setLoading(false);
+          return;
+        }
+
+        // Try to load from offline storage as fallback
+        const offlineData = offlineStorage.getProfile(user?.id || '');
+        if (offlineData) {
+          setProfile(offlineData);
+        }
+      } else {
+        setProfile(data);
+        // Save to offline storage
+        offlineStorage.saveProfile(data);
+      }
+    } catch (error) {
+      console.error('Catch block error:', error);
+      console.error('Error details:', JSON.stringify(error, null, 2));
+      // Try to load from offline storage as fallback
+      const offlineData = offlineStorage.getProfile(user?.id || '');
+      if (offlineData) {
+        setProfile(offlineData);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [user?.id]);
+
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
@@ -49,48 +103,6 @@ const DashboardScreen: React.FC = () => {
     return () => window.removeEventListener('profile-updated', handleProfileUpdate);
   }, [user, fetchProfile]);
 
-  const fetchProfile = useCallback(async () => {
-    try {
-      if (!navigator.onLine) {
-        // Use offline data when offline
-        const offlineData = offlineStorage.getProfile(user?.id || '');
-        if (offlineData) {
-          setProfile(offlineData);
-        }
-        setLoading(false);
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user?.id)
-        .single();
-
-      if (error) {
-        console.error('Error fetching profile:', error);
-        // Try to load from offline storage as fallback
-        const offlineData = offlineStorage.getProfile(user?.id || '');
-        if (offlineData) {
-          setProfile(offlineData);
-        }
-      } else {
-        setProfile(data);
-        // Save to offline storage
-        offlineStorage.saveProfile(data);
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      // Try to load from offline storage as fallback
-      const offlineData = offlineStorage.getProfile(user?.id || '');
-      if (offlineData) {
-        setProfile(offlineData);
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, [user?.id]);
-
   if (!user || loading) return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50 flex items-center justify-center">
       <div className="text-center">
@@ -100,7 +112,18 @@ const DashboardScreen: React.FC = () => {
     </div>
   );
 
-  if (!profile) return null;
+  if (!profile) {
+    // If no profile found, redirect to profile setup
+    setCurrentScreen('profileSetup');
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Setting up your profile...</p>
+        </div>
+      </div>
+    );
+  }
 
   const today = new Date();
   const lastPeriodDate = profile.last_period_date ? new Date(profile.last_period_date) : new Date();

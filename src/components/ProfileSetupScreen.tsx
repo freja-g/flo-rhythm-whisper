@@ -56,14 +56,14 @@ const ProfileSetupScreen: React.FC = () => {
     try {
       const { error } = await supabase
         .from('profiles')
-        .update({
+        .upsert({
+          id: user.id,
           name: formData.name,
           profile_photo: formData.profilePhoto,
           period_length: formData.periodLength,
           cycle_length: formData.cycleLength,
           last_period_date: formData.lastPeriodDate
-        })
-        .eq('id', user.id);
+        });
       
       if (error) {
         console.error('Error updating profile:', error);
