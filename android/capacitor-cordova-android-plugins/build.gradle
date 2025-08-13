@@ -1,59 +1,40 @@
-ext {
-    androidxAppCompatVersion = project.hasProperty('androidxAppCompatVersion') ? rootProject.ext.androidxAppCompatVersion : '1.7.0'
-    cordovaAndroidVersion = project.hasProperty('cordovaAndroidVersion') ? rootProject.ext.cordovaAndroidVersion : '10.1.1'
-}
-
-buildscript {
-    repositories {
-        google()
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:8.7.2'
-    }
-}
-
 apply plugin: 'com.android.library'
 
 android {
-    namespace "capacitor.cordova.android.plugins"
-    compileSdk project.hasProperty('compileSdkVersion') ? rootProject.ext.compileSdkVersion : 35
+    namespace 'com.getcapacitor.cordova.android.plugins'
+    compileSdk 34
+
     defaultConfig {
-        minSdkVersion project.hasProperty('minSdkVersion') ? rootProject.ext.minSdkVersion : 23
-        targetSdkVersion project.hasProperty('targetSdkVersion') ? rootProject.ext.targetSdkVersion : 35
+        minSdk 22
+        targetSdk 34
         versionCode 1
         versionName "1.0"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
-    lintOptions {
-        abortOnError false
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
     }
+
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_21
-        targetCompatibility JavaVersion.VERSION_21
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 }
 
 repositories {
-    google()
-    mavenCentral()
-    flatDir{
-        dirs 'src/main/libs', 'libs'
+    flatDir {
+        dirs 'src/main/libs'
     }
 }
 
 dependencies {
     implementation fileTree(dir: 'src/main/libs', include: ['*.jar'])
-    implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
-    implementation "org.apache.cordova:framework:$cordovaAndroidVersion"
-    // SUB-PROJECT DEPENDENCIES START
-
-    // SUB-PROJECT DEPENDENCIES END
-}
-
-// PLUGIN GRADLE EXTENSIONS START
-apply from: "cordova.variables.gradle"
-// PLUGIN GRADLE EXTENSIONS END
-
-for (def func : cdvPluginPostBuildExtras) {
-    func()
+    implementation project(':capacitor-android')
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 }
