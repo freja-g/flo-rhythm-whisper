@@ -57,7 +57,7 @@ const HealthReportsScreen: React.FC = () => {
     setTrendData(trends);
   }, [sortedCycles]);
 
-  const calculateStats = () => {
+  const calculateStats = useCallback(() => {
     if (sortedCycles.length < 2) return;
 
     // Calculate cycle lengths between consecutive cycles
@@ -69,7 +69,7 @@ const HealthReportsScreen: React.FC = () => {
 
     const avgCycleLength = cycleLengths.reduce((sum, length) => sum + length, 0) / cycleLengths.length;
     const avgPeriodLength = sortedCycles.reduce((sum, cycle) => sum + (cycle.periodLength || 0), 0) / sortedCycles.length;
-    
+
     // Calculate variability (standard deviation)
     const variance = cycleLengths.reduce((sum, length) => sum + Math.pow(length - avgCycleLength, 2), 0) / cycleLengths.length;
     const cycleVariability = Math.sqrt(variance);
@@ -79,7 +79,7 @@ const HealthReportsScreen: React.FC = () => {
       avgPeriodLength: Math.round(avgPeriodLength * 10) / 10,
       cycleVariability: Math.round(cycleVariability * 10) / 10
     });
-  };
+  }, [sortedCycles]);
 
   useEffect(() => {
     if (sortedCycles.length >= 5) {
