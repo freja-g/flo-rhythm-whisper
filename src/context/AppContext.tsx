@@ -39,10 +39,12 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const [loading, setLoading] = React.useState(false);
   const lastLoadedUserId = useRef<string | null>(null);
 
+  const userId = user?.id;
+
   // Load data from database when user logs in
   useEffect(() => {
     const loadUserData = async () => {
-      if (!user) {
+      if (!userId) {
         // Clear data when user logs out
         setSymptoms([]);
         setCycles([]);
@@ -52,7 +54,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       }
 
       // Prevent loading if we've already loaded data for this user
-      if (lastLoadedUserId.current === user.id) {
+      if (lastLoadedUserId.current === userId) {
         return;
       }
 
@@ -62,7 +64,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         const { data: cyclesData } = await supabase
           .from('cycles')
           .select('*')
-          .eq('user_id', user.id)
+          .eq('user_id', userId)
           .order('start_date', { ascending: false });
 
         if (cyclesData) {
@@ -80,7 +82,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         const { data: symptomsData } = await supabase
           .from('symptoms')
           .select('*')
-          .eq('user_id', user.id)
+          .eq('user_id', userId)
           .order('date', { ascending: false });
 
         if (symptomsData) {
@@ -96,7 +98,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
           setSymptoms(formattedSymptoms);
         }
 
-        lastLoadedUserId.current = user.id;
+        lastLoadedUserId.current = userId;
       } catch (error) {
         console.error('Error loading user data:', error);
       } finally {
@@ -105,7 +107,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     };
 
     loadUserData();
-  }, [user]);
+  }, [userId]);
 
   return (
     <AppContext.Provider value={{
