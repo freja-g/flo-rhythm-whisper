@@ -37,6 +37,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const [chatMessages, setChatMessages] = useLocalStorage<ChatMessage[]>('chatMessages', []);
   const [currentScreen, setCurrentScreen] = useLocalStorage<string>('currentScreen', 'splash');
   const [loading, setLoading] = React.useState(false);
+  const lastLoadedUserId = useRef<string | null>(null);
 
   // Load data from database when user logs in
   useEffect(() => {
@@ -46,6 +47,12 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         setSymptoms([]);
         setCycles([]);
         setChatMessages([]);
+        lastLoadedUserId.current = null;
+        return;
+      }
+
+      // Prevent loading if we've already loaded data for this user
+      if (lastLoadedUserId.current === user.id) {
         return;
       }
 
@@ -88,6 +95,8 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
           }));
           setSymptoms(formattedSymptoms);
         }
+
+        lastLoadedUserId.current = user.id;
       } catch (error) {
         console.error('Error loading user data:', error);
       } finally {
@@ -96,7 +105,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     };
 
     loadUserData();
-  }, [user, setSymptoms, setCycles]);
+  }, [user]);
 
   return (
     <AppContext.Provider value={{
