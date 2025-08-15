@@ -107,7 +107,8 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       chatMessages,
       setChatMessages,
       currentScreen,
-      setCurrentScreen
+      setCurrentScreen,
+      loading
     }}>
       {children}
     </AppContext.Provider>
