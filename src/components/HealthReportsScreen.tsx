@@ -654,17 +654,17 @@ const HealthReportsScreen: React.FC = () => {
                 <span className="font-medium">
                   {(function() {
                     let score = 100;
-                    if (averageStats.avgCycleLength < 21 || averageStats.avgCycleLength > 35) score -= 20;
-                    if (averageStats.cycleVariability > 5) score -= 15;
-                    if (averageStats.avgPeriodLength > 7) score -= 10;
+                    if (calculatedStats.avgCycleLength < 21 || calculatedStats.avgCycleLength > 35) score -= 20;
+                    if (calculatedStats.cycleVariability > 5) score -= 15;
+                    if (calculatedStats.avgPeriodLength > 7) score -= 10;
                     if (anomalies.length > 0) score -= 15;
                     return score;
                   })()}/100 {(function() {
                     const score = (function() {
                       let s = 100;
-                      if (averageStats.avgCycleLength < 21 || averageStats.avgCycleLength > 35) s -= 20;
-                      if (averageStats.cycleVariability > 5) s -= 15;
-                      if (averageStats.avgPeriodLength > 7) s -= 10;
+                      if (calculatedStats.avgCycleLength < 21 || calculatedStats.avgCycleLength > 35) s -= 20;
+                      if (calculatedStats.cycleVariability > 5) s -= 15;
+                      if (calculatedStats.avgPeriodLength > 7) s -= 10;
                       if (anomalies.length > 0) s -= 15;
                       return s;
                     })();
@@ -679,27 +679,27 @@ const HealthReportsScreen: React.FC = () => {
           <div>
             <h4 className="font-medium text-gray-700 mb-3">Personalized Recommendations</h4>
             <div className="space-y-2">
-              {averageStats.cycleVariability > 7 && (
+              {calculatedStats.cycleVariability > 7 && (
                 <div className="p-3 bg-blue-50 rounded-lg border-l-4 border-blue-400">
                   <p className="text-sm text-blue-800">📊 Track stress levels and sleep patterns - high variability may be linked to lifestyle factors</p>
                 </div>
               )}
-              {averageStats.avgPeriodLength > 7 && (
+              {calculatedStats.avgPeriodLength > 7 && (
                 <div className="p-3 bg-yellow-50 rounded-lg border-l-4 border-yellow-400">
                   <p className="text-sm text-yellow-800">⏰ Consider tracking flow intensity - periods longer than 7 days may need medical evaluation</p>
                 </div>
               )}
-              {averageStats.avgCycleLength < 21 && (
+              {calculatedStats.avgCycleLength < 21 && (
                 <div className="p-3 bg-orange-50 rounded-lg border-l-4 border-orange-400">
                   <p className="text-sm text-orange-800">🔄 Short cycles may indicate hormonal imbalances - consider nutrition and exercise tracking</p>
                 </div>
               )}
-              {averageStats.avgCycleLength > 35 && (
+              {calculatedStats.avgCycleLength > 35 && (
                 <div className="p-3 bg-red-50 rounded-lg border-l-4 border-red-400">
                   <p className="text-sm text-red-800">📅 Long cycles may suggest PCOS or other conditions - medical consultation recommended</p>
                 </div>
               )}
-              {anomalies.length === 0 && averageStats.cycleVariability <= 3 && (
+              {anomalies.length === 0 && calculatedStats.cycleVariability <= 3 && (
                 <div className="p-3 bg-green-50 rounded-lg border-l-4 border-green-400">
                   <p className="text-sm text-green-800">✨ Excellent cycle health! Continue current lifestyle and tracking habits</p>
                 </div>
