@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import { formatDate, getDaysBetween } from '../utils/dateUtils';
@@ -23,19 +23,18 @@ const DoctorAdviceRenderer: React.FC<{ advice: string[] }> = ({ advice }) => (
 const HealthReportsScreen: React.FC = () => {
   const { cycles, symptoms, setCurrentScreen } = useApp();
   const { user } = useAuth();
-  const [trendData, setTrendData] = useState<{ name: string; cycles: number; periods: number; }[]>([]);
-  const [averageStats, setAverageStats] = useState({
-    avgCycleLength: 0,
-    avgPeriodLength: 0,
-    cycleVariability: 0
-  });
 
-  const sortedCycles = cycles
-    .filter(cycle => cycle.userId === user?.id)
-    .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+  const sortedCycles = useMemo(() =>
+    cycles
+      .filter(cycle => cycle.userId === user?.id)
+      .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()),
+    [cycles, user?.id]
+  );
 
-  const calculateTrends = useCallback(() => {
-    const trends = sortedCycles.map((cycle, index) => {
+  const calculatedTrends = useMemo(() => {
+    if (sortedCycles.length < 5) return [];
+
+    return sortedCycles.map((cycle, index) => {
       const cycleNumber = index + 1;
       let actualCycleLength = cycle.length;
 
@@ -53,12 +52,16 @@ const HealthReportsScreen: React.FC = () => {
         month: new Date(cycle.startDate).toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
       };
     });
-
-    setTrendData(trends);
   }, [sortedCycles]);
 
-  const calculateStats = useCallback(() => {
-    if (sortedCycles.length < 2) return;
+  const calculatedStats = useMemo(() => {
+    if (sortedCycles.length < 2) {
+      return {
+        avgCycleLength: 0,
+        avgPeriodLength: 0,
+        cycleVariability: 0
+      };
+    }
 
     // Calculate cycle lengths between consecutive cycles
     const cycleLengths: number[] = [];
@@ -74,19 +77,13 @@ const HealthReportsScreen: React.FC = () => {
     const variance = cycleLengths.reduce((sum, length) => sum + Math.pow(length - avgCycleLength, 2), 0) / cycleLengths.length;
     const cycleVariability = Math.sqrt(variance);
 
-    setAverageStats({
+    return {
       avgCycleLength: Math.round(avgCycleLength * 10) / 10,
       avgPeriodLength: Math.round(avgPeriodLength * 10) / 10,
       cycleVariability: Math.round(cycleVariability * 10) / 10
-    });
+    };
   }, [sortedCycles]);
 
-  useEffect(() => {
-    if (sortedCycles.length >= 5) {
-      calculateTrends();
-      calculateStats();
-    }
-  }, [calculateTrends, calculateStats, sortedCycles.length]);
 
   // SEO: title and meta description
   useEffect(() => {
@@ -103,19 +100,19 @@ const HealthReportsScreen: React.FC = () => {
     }
   }, []);
 
-  const getHealthInsights = () => {
+  const getHealthInsights = useCallback(() => {
     if (sortedCycles.length < 5) return [];
 
     const insights = [];
 
     // Cycle regularity insight
-    if (averageStats.cycleVariability <= 2) {
+    if (calculatedStats.cycleVariability <= 2) {
       insights.push({
         type: 'positive',
         title: 'Regular Cycles',
         description: 'Your cycles are very regular! This indicates good hormonal health.'
       });
-    } else if (averageStats.cycleVariability <= 5) {
+    } else if (calculatedStats.cycleVariability <= 5) {
       insights.push({
         type: 'neutral',
         title: 'Moderately Regular',
@@ -130,11 +127,11 @@ const HealthReportsScreen: React.FC = () => {
     }
 
     // Cycle length insight
-    if (averageStats.avgCycleLength >= 21 && averageStats.avgCycleLength <= 35) {
+    if (calculatedStats.avgCycleLength >= 21 && calculatedStats.avgCycleLength <= 35) {
       insights.push({
         type: 'positive',
         title: 'Normal Cycle Length',
-        description: `Your average cycle length of ${averageStats.avgCycleLength} days is within the healthy range.`
+        description: `Your average cycle length of ${calculatedStats.avgCycleLength} days is within the healthy range.`
       });
     } else {
       insights.push({
@@ -145,7 +142,7 @@ const HealthReportsScreen: React.FC = () => {
     }
 
     return insights;
-  };
+  }, [sortedCycles.length, calculatedStats]);
 
   const chartConfig = {
     cycleLength: {
@@ -226,14 +223,14 @@ const HealthReportsScreen: React.FC = () => {
         : (sortedAbsDev[sortedAbsDev.length / 2 - 1] + sortedAbsDev[sortedAbsDev.length / 2]) / 2)
     : 0;
 
-  const coefVar = averageStats.avgCycleLength
-    ? (averageStats.cycleVariability / averageStats.avgCycleLength) * 100
+  const coefVar = calculatedStats.avgCycleLength
+    ? (calculatedStats.cycleVariability / calculatedStats.avgCycleLength) * 100
     : 0;
 
   // Prediction based on last cycle start and average length
   const lastStart = sortedCycles[sortedCycles.length - 1]?.startDate;
   const predictedNextDate = lastStart
-    ? new Date(new Date(lastStart).getTime() + averageStats.avgCycleLength * 24 * 60 * 60 * 1000)
+    ? new Date(new Date(lastStart).getTime() + calculatedStats.avgCycleLength * 24 * 60 * 60 * 1000)
     : null;
   const daysUntilNext = predictedNextDate ? getDaysBetween(new Date(), predictedNextDate) : null;
 
@@ -265,10 +262,10 @@ const HealthReportsScreen: React.FC = () => {
 
   // Doctor advice generation
   const doctorAdvice: string[] = [];
-  if (averageStats.cycleVariability > 7) {
+  if (calculatedStats.cycleVariability > 7) {
     doctorAdvice.push('High cycle variability detected');
   }
-  if (averageStats.avgCycleLength < 21 || averageStats.avgCycleLength > 35) {
+  if (calculatedStats.avgCycleLength < 21 || calculatedStats.avgCycleLength > 35) {
     doctorAdvice.push('Cycle length outside normal range');
   }
   if (longPeriods > sortedCycles.length * 0.3) {
@@ -283,9 +280,9 @@ const HealthReportsScreen: React.FC = () => {
 
   const report = [
     'Health Report Summary',
-    `Average cycle length: ${averageStats.avgCycleLength} days`,
-    `Average period length: ${averageStats.avgPeriodLength} days`,
-    `Variability (SD): ${averageStats.cycleVariability} days (CV ${coefVar.toFixed(1)}%)`,
+    `Average cycle length: ${calculatedStats.avgCycleLength} days`,
+    `Average period length: ${calculatedStats.avgPeriodLength} days`,
+    `Variability (SD): ${calculatedStats.cycleVariability} days (CV ${coefVar.toFixed(1)}%)`,
     `Median cycle length: ${Math.round(medianCycleLength * 10) / 10} days` ,
     `Shortest/Longest: ${shortestCycle}/${longestCycle} days`,
     predictedNextDate ? `Predicted next start: ${formatDate(predictedNextDate)} (${daysUntilNext} days)` : '',
@@ -332,17 +329,17 @@ const HealthReportsScreen: React.FC = () => {
         {/* Statistics Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
           <div className="bg-white rounded-xl p-3 sm:p-4 shadow-lg text-center">
-            <div className="text-xl sm:text-2xl font-bold text-primary">{averageStats.avgCycleLength}</div>
+            <div className="text-xl sm:text-2xl font-bold text-primary">{calculatedStats.avgCycleLength}</div>
             <div className="text-xs sm:text-sm text-gray-600">Avg Cycle</div>
             <div className="text-xs text-gray-500">days</div>
           </div>
           <div className="bg-white rounded-xl p-3 sm:p-4 shadow-lg text-center">
-            <div className="text-xl sm:text-2xl font-bold text-secondary-foreground">{averageStats.avgPeriodLength}</div>
+            <div className="text-xl sm:text-2xl font-bold text-secondary-foreground">{calculatedStats.avgPeriodLength}</div>
             <div className="text-xs sm:text-sm text-gray-600">Avg Period</div>
             <div className="text-xs text-gray-500">days</div>
           </div>
           <div className="bg-white rounded-xl p-3 sm:p-4 shadow-lg text-center">
-            <div className="text-xl sm:text-2xl font-bold text-accent-foreground">{averageStats.cycleVariability}</div>
+            <div className="text-xl sm:text-2xl font-bold text-accent-foreground">{calculatedStats.cycleVariability}</div>
             <div className="text-xs sm:text-sm text-gray-600">Variability</div>
             <div className="text-xs text-gray-500">days</div>
           </div>
@@ -362,7 +359,7 @@ const HealthReportsScreen: React.FC = () => {
           <div className="overflow-x-auto">
             <ChartContainer config={chartConfig} className="h-56 sm:h-64 md:h-72 min-w-[300px]">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={trendData} margin={{ top: 5, right: 15, left: 5, bottom: 65 }}>
+                <LineChart data={calculatedTrends} margin={{ top: 5, right: 15, left: 5, bottom: 65 }}>
                   <defs>
                     <linearGradient id="purpleGradient" x1="0" y1="0" x2="1" y2="0">
                       <stop offset="0%" stopColor="#8b5cf6" />
@@ -413,7 +410,7 @@ const HealthReportsScreen: React.FC = () => {
           <div className="overflow-x-auto">
             <ChartContainer config={chartConfig} className="h-56 sm:h-64 md:h-72 min-w-[300px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={trendData} margin={{ top: 5, right: 15, left: 5, bottom: 65 }}>
+                <BarChart data={calculatedTrends} margin={{ top: 5, right: 15, left: 5, bottom: 65 }}>
                   <defs>
                     <linearGradient id="pinkGradient" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="#ec4899" />
@@ -576,11 +573,11 @@ const HealthReportsScreen: React.FC = () => {
                 <div>
                   <div className="text-sm text-gray-600">Regularity Score</div>
                   <div className="text-lg font-semibold">
-                    {averageStats.cycleVariability <= 2 ? '🟢 Excellent' :
-                     averageStats.cycleVariability <= 5 ? '🟡 Good' :
-                     averageStats.cycleVariability <= 8 ? '🟠 Fair' : '🔴 Irregular'}
+                    {calculatedStats.cycleVariability <= 2 ? '🟢 Excellent' :
+                     calculatedStats.cycleVariability <= 5 ? '🟡 Good' :
+                     calculatedStats.cycleVariability <= 8 ? '🟠 Fair' : '🔴 Irregular'}
                   </div>
-                  <div className="text-xs text-gray-500">Variability: ±{averageStats.cycleVariability} days</div>
+                  <div className="text-xs text-gray-500">Variability: ±{calculatedStats.cycleVariability} days</div>
                 </div>
                 <div>
                   <div className="text-sm text-gray-600">Consistency Rating</div>
@@ -629,17 +626,17 @@ const HealthReportsScreen: React.FC = () => {
               <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                 <span className="text-sm">Luteal Phase Length</span>
                 <span className="font-medium">
-                  {averageStats.avgCycleLength - 14 > 10 ?
-                    `~${Math.round(averageStats.avgCycleLength - 14)} days 🟢` :
-                    `~${Math.round(averageStats.avgCycleLength - 14)} days ⚠️`
+                  {calculatedStats.avgCycleLength - 14 > 10 ?
+                    `~${Math.round(calculatedStats.avgCycleLength - 14)} days 🟢` :
+                    `~${Math.round(calculatedStats.avgCycleLength - 14)} days ⚠️`
                   }
                 </span>
               </div>
               <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                 <span className="text-sm">Ovulation Regularity</span>
                 <span className="font-medium">
-                  {averageStats.cycleVariability <= 3 ? 'Likely Regular 🟢' :
-                   averageStats.cycleVariability <= 7 ? 'Moderately Regular 🟡' : 'Irregular ⚠️'}
+                  {calculatedStats.cycleVariability <= 3 ? 'Likely Regular 🟢' :
+                   calculatedStats.cycleVariability <= 7 ? 'Moderately Regular 🟡' : 'Irregular ⚠️'}
                 </span>
               </div>
               <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
@@ -647,17 +644,17 @@ const HealthReportsScreen: React.FC = () => {
                 <span className="font-medium">
                   {(function() {
                     let score = 100;
-                    if (averageStats.avgCycleLength < 21 || averageStats.avgCycleLength > 35) score -= 20;
-                    if (averageStats.cycleVariability > 5) score -= 15;
-                    if (averageStats.avgPeriodLength > 7) score -= 10;
+                    if (calculatedStats.avgCycleLength < 21 || calculatedStats.avgCycleLength > 35) score -= 20;
+                    if (calculatedStats.cycleVariability > 5) score -= 15;
+                    if (calculatedStats.avgPeriodLength > 7) score -= 10;
                     if (anomalies.length > 0) score -= 15;
                     return score;
                   })()}/100 {(function() {
                     const score = (function() {
                       let s = 100;
-                      if (averageStats.avgCycleLength < 21 || averageStats.avgCycleLength > 35) s -= 20;
-                      if (averageStats.cycleVariability > 5) s -= 15;
-                      if (averageStats.avgPeriodLength > 7) s -= 10;
+                      if (calculatedStats.avgCycleLength < 21 || calculatedStats.avgCycleLength > 35) s -= 20;
+                      if (calculatedStats.cycleVariability > 5) s -= 15;
+                      if (calculatedStats.avgPeriodLength > 7) s -= 10;
                       if (anomalies.length > 0) s -= 15;
                       return s;
                     })();
@@ -672,27 +669,27 @@ const HealthReportsScreen: React.FC = () => {
           <div>
             <h4 className="font-medium text-gray-700 mb-3">Personalized Recommendations</h4>
             <div className="space-y-2">
-              {averageStats.cycleVariability > 7 && (
+              {calculatedStats.cycleVariability > 7 && (
                 <div className="p-3 bg-blue-50 rounded-lg border-l-4 border-blue-400">
                   <p className="text-sm text-blue-800">📊 Track stress levels and sleep patterns - high variability may be linked to lifestyle factors</p>
                 </div>
               )}
-              {averageStats.avgPeriodLength > 7 && (
+              {calculatedStats.avgPeriodLength > 7 && (
                 <div className="p-3 bg-yellow-50 rounded-lg border-l-4 border-yellow-400">
                   <p className="text-sm text-yellow-800">⏰ Consider tracking flow intensity - periods longer than 7 days may need medical evaluation</p>
                 </div>
               )}
-              {averageStats.avgCycleLength < 21 && (
+              {calculatedStats.avgCycleLength < 21 && (
                 <div className="p-3 bg-orange-50 rounded-lg border-l-4 border-orange-400">
                   <p className="text-sm text-orange-800">🔄 Short cycles may indicate hormonal imbalances - consider nutrition and exercise tracking</p>
                 </div>
               )}
-              {averageStats.avgCycleLength > 35 && (
+              {calculatedStats.avgCycleLength > 35 && (
                 <div className="p-3 bg-red-50 rounded-lg border-l-4 border-red-400">
                   <p className="text-sm text-red-800">📅 Long cycles may suggest PCOS or other conditions - medical consultation recommended</p>
                 </div>
               )}
-              {anomalies.length === 0 && averageStats.cycleVariability <= 3 && (
+              {anomalies.length === 0 && calculatedStats.cycleVariability <= 3 && (
                 <div className="p-3 bg-green-50 rounded-lg border-l-4 border-green-400">
                   <p className="text-sm text-green-800">✨ Excellent cycle health! Continue current lifestyle and tracking habits</p>
                 </div>
