@@ -24,23 +24,10 @@ const DoctorAdviceRenderer: React.FC<{ advice: string[] }> = ({ advice }) => (
 const HealthReportsScreen: React.FC = () => {
   const { cycles, symptoms, setCurrentScreen } = useApp();
   const { user } = useAuth();
+  const [isWebViewOpen, setIsWebViewOpen] = useState(false);
 
-  const openSpecialistContact = async () => {
-    const url = 'https://my1health.com/search/providers/conditions/menstrual-irregularities/kenya';
-
-    if (Capacitor.isNativePlatform()) {
-      // Open in in-app browser on mobile
-      await Browser.open({
-        url,
-        windowName: '_self',
-        toolbarColor: '#6B73FF',
-        presentationStyle: 'popover',
-        showTitle: true
-      });
-    } else {
-      // Fallback for web
-      window.open(url, '_blank', 'noopener,noreferrer');
-    }
+  const openSpecialistContact = () => {
+    setIsWebViewOpen(true);
   };
 
   const sortedCycles = useMemo(() =>
@@ -677,7 +664,7 @@ const HealthReportsScreen: React.FC = () => {
                       if (anomalies.length > 0) s -= 15;
                       return s;
                     })();
-                    return score >= 85 ? '🟢' : score >= 70 ? '🟡' : score >= 50 ? '🟠' : '🔴';
+                    return score >= 85 ? '🟢' : score >= 70 ? '��' : score >= 50 ? '🟠' : '🔴';
                   })()}
                 </span>
               </div>
