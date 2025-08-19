@@ -5,6 +5,8 @@ import { formatDate, getDaysBetween } from '../utils/dateUtils';
 import { Cycle } from '../types';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { Browser } from '@capacitor/browser';
+import { Capacitor } from '@capacitor/core';
 
 const DoctorAdviceRenderer: React.FC<{ advice: string[] }> = ({ advice }) => (
   <div className="space-y-2">
