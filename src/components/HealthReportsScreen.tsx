@@ -5,6 +5,7 @@ import { formatDate, getDaysBetween } from '../utils/dateUtils';
 import { Cycle } from '../types';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { WebViewModal } from './WebViewModal';
 
 const DoctorAdviceRenderer: React.FC<{ advice: string[] }> = ({ advice }) => (
   <div className="space-y-2">
@@ -23,6 +24,11 @@ const DoctorAdviceRenderer: React.FC<{ advice: string[] }> = ({ advice }) => (
 const HealthReportsScreen: React.FC = () => {
   const { cycles, symptoms, setCurrentScreen } = useApp();
   const { user } = useAuth();
+  const [isWebViewOpen, setIsWebViewOpen] = useState(false);
+
+  const openSpecialistContact = () => {
+    setIsWebViewOpen(true);
+  };
 
   const sortedCycles = useMemo(() =>
     cycles
@@ -658,7 +664,7 @@ const HealthReportsScreen: React.FC = () => {
                       if (anomalies.length > 0) s -= 15;
                       return s;
                     })();
-                    return score >= 85 ? '🟢' : score >= 70 ? '🟡' : score >= 50 ? '🟠' : '🔴';
+                    return score >= 85 ? '🟢' : score >= 70 ? '��' : score >= 50 ? '🟠' : '🔴';
                   })()}
                 </span>
               </div>
@@ -703,14 +709,12 @@ const HealthReportsScreen: React.FC = () => {
           <h3 className="text-lg font-semibold text-gray-800 mb-2">Contact a Specialist</h3>
           <p className="text-sm text-gray-600 mb-4">This report is informational and not a diagnosis. If you have concerns or notice persistent anomalies, consider consulting a qualified healthcare professional.</p>
           <div className="flex gap-3">
-            <a
-              href="https://my1health.com/search/providers/conditions/menstrual-irregularities/kenya"
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              onClick={openSpecialistContact}
               className="bg-gradient-to-r from-primary to-secondary text-white px-4 py-2 rounded-lg hover:shadow-md transition-all"
             >
               Contact Specialist
-            </a>
+            </button>
           </div>
         </section>
 
@@ -754,6 +758,14 @@ const HealthReportsScreen: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* WebView Modal for Contact Specialist */}
+      <WebViewModal
+        isOpen={isWebViewOpen}
+        onClose={() => setIsWebViewOpen(false)}
+        url="https://my1health.com/search/providers/conditions/menstrual-irregularities/kenya"
+        title="Contact a Specialist"
+      />
     </div>
   );
 };
