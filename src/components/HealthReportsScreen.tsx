@@ -339,17 +339,17 @@ const HealthReportsScreen: React.FC = () => {
         {/* Statistics Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
           <div className="bg-white rounded-xl p-3 sm:p-4 shadow-lg text-center">
-            <div className="text-xl sm:text-2xl font-bold text-primary">{averageStats.avgCycleLength}</div>
+            <div className="text-xl sm:text-2xl font-bold text-primary">{calculatedStats.avgCycleLength}</div>
             <div className="text-xs sm:text-sm text-gray-600">Avg Cycle</div>
             <div className="text-xs text-gray-500">days</div>
           </div>
           <div className="bg-white rounded-xl p-3 sm:p-4 shadow-lg text-center">
-            <div className="text-xl sm:text-2xl font-bold text-secondary-foreground">{averageStats.avgPeriodLength}</div>
+            <div className="text-xl sm:text-2xl font-bold text-secondary-foreground">{calculatedStats.avgPeriodLength}</div>
             <div className="text-xs sm:text-sm text-gray-600">Avg Period</div>
             <div className="text-xs text-gray-500">days</div>
           </div>
           <div className="bg-white rounded-xl p-3 sm:p-4 shadow-lg text-center">
-            <div className="text-xl sm:text-2xl font-bold text-accent-foreground">{averageStats.cycleVariability}</div>
+            <div className="text-xl sm:text-2xl font-bold text-accent-foreground">{calculatedStats.cycleVariability}</div>
             <div className="text-xs sm:text-sm text-gray-600">Variability</div>
             <div className="text-xs text-gray-500">days</div>
           </div>
