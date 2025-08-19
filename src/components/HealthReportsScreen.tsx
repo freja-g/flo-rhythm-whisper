@@ -583,11 +583,11 @@ const HealthReportsScreen: React.FC = () => {
                 <div>
                   <div className="text-sm text-gray-600">Regularity Score</div>
                   <div className="text-lg font-semibold">
-                    {averageStats.cycleVariability <= 2 ? '🟢 Excellent' :
-                     averageStats.cycleVariability <= 5 ? '🟡 Good' :
-                     averageStats.cycleVariability <= 8 ? '🟠 Fair' : '🔴 Irregular'}
+                    {calculatedStats.cycleVariability <= 2 ? '🟢 Excellent' :
+                     calculatedStats.cycleVariability <= 5 ? '🟡 Good' :
+                     calculatedStats.cycleVariability <= 8 ? '🟠 Fair' : '🔴 Irregular'}
                   </div>
-                  <div className="text-xs text-gray-500">Variability: ±{averageStats.cycleVariability} days</div>
+                  <div className="text-xs text-gray-500">Variability: ±{calculatedStats.cycleVariability} days</div>
                 </div>
                 <div>
                   <div className="text-sm text-gray-600">Consistency Rating</div>
@@ -636,17 +636,17 @@ const HealthReportsScreen: React.FC = () => {
               <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                 <span className="text-sm">Luteal Phase Length</span>
                 <span className="font-medium">
-                  {averageStats.avgCycleLength - 14 > 10 ?
-                    `~${Math.round(averageStats.avgCycleLength - 14)} days 🟢` :
-                    `~${Math.round(averageStats.avgCycleLength - 14)} days ⚠️`
+                  {calculatedStats.avgCycleLength - 14 > 10 ?
+                    `~${Math.round(calculatedStats.avgCycleLength - 14)} days 🟢` :
+                    `~${Math.round(calculatedStats.avgCycleLength - 14)} days ⚠️`
                   }
                 </span>
               </div>
               <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                 <span className="text-sm">Ovulation Regularity</span>
                 <span className="font-medium">
-                  {averageStats.cycleVariability <= 3 ? 'Likely Regular 🟢' :
-                   averageStats.cycleVariability <= 7 ? 'Moderately Regular 🟡' : 'Irregular ⚠️'}
+                  {calculatedStats.cycleVariability <= 3 ? 'Likely Regular 🟢' :
+                   calculatedStats.cycleVariability <= 7 ? 'Moderately Regular 🟡' : 'Irregular ⚠️'}
                 </span>
               </div>
               <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
