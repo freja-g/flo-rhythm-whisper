@@ -233,14 +233,14 @@ const HealthReportsScreen: React.FC = () => {
         : (sortedAbsDev[sortedAbsDev.length / 2 - 1] + sortedAbsDev[sortedAbsDev.length / 2]) / 2)
     : 0;
 
-  const coefVar = averageStats.avgCycleLength
-    ? (averageStats.cycleVariability / averageStats.avgCycleLength) * 100
+  const coefVar = calculatedStats.avgCycleLength
+    ? (calculatedStats.cycleVariability / calculatedStats.avgCycleLength) * 100
     : 0;
 
   // Prediction based on last cycle start and average length
   const lastStart = sortedCycles[sortedCycles.length - 1]?.startDate;
   const predictedNextDate = lastStart
-    ? new Date(new Date(lastStart).getTime() + averageStats.avgCycleLength * 24 * 60 * 60 * 1000)
+    ? new Date(new Date(lastStart).getTime() + calculatedStats.avgCycleLength * 24 * 60 * 60 * 1000)
     : null;
   const daysUntilNext = predictedNextDate ? getDaysBetween(new Date(), predictedNextDate) : null;
 
@@ -272,10 +272,10 @@ const HealthReportsScreen: React.FC = () => {
 
   // Doctor advice generation
   const doctorAdvice: string[] = [];
-  if (averageStats.cycleVariability > 7) {
+  if (calculatedStats.cycleVariability > 7) {
     doctorAdvice.push('High cycle variability detected');
   }
-  if (averageStats.avgCycleLength < 21 || averageStats.avgCycleLength > 35) {
+  if (calculatedStats.avgCycleLength < 21 || calculatedStats.avgCycleLength > 35) {
     doctorAdvice.push('Cycle length outside normal range');
   }
   if (longPeriods > sortedCycles.length * 0.3) {
@@ -290,9 +290,9 @@ const HealthReportsScreen: React.FC = () => {
 
   const report = [
     'Health Report Summary',
-    `Average cycle length: ${averageStats.avgCycleLength} days`,
-    `Average period length: ${averageStats.avgPeriodLength} days`,
-    `Variability (SD): ${averageStats.cycleVariability} days (CV ${coefVar.toFixed(1)}%)`,
+    `Average cycle length: ${calculatedStats.avgCycleLength} days`,
+    `Average period length: ${calculatedStats.avgPeriodLength} days`,
+    `Variability (SD): ${calculatedStats.cycleVariability} days (CV ${coefVar.toFixed(1)}%)`,
     `Median cycle length: ${Math.round(medianCycleLength * 10) / 10} days` ,
     `Shortest/Longest: ${shortestCycle}/${longestCycle} days`,
     predictedNextDate ? `Predicted next start: ${formatDate(predictedNextDate)} (${daysUntilNext} days)` : '',
