@@ -110,19 +110,19 @@ const HealthReportsScreen: React.FC = () => {
     }
   }, []);
 
-  const getHealthInsights = () => {
+  const getHealthInsights = useCallback(() => {
     if (sortedCycles.length < 5) return [];
 
     const insights = [];
 
     // Cycle regularity insight
-    if (averageStats.cycleVariability <= 2) {
+    if (calculatedStats.cycleVariability <= 2) {
       insights.push({
         type: 'positive',
         title: 'Regular Cycles',
         description: 'Your cycles are very regular! This indicates good hormonal health.'
       });
-    } else if (averageStats.cycleVariability <= 5) {
+    } else if (calculatedStats.cycleVariability <= 5) {
       insights.push({
         type: 'neutral',
         title: 'Moderately Regular',
@@ -137,11 +137,11 @@ const HealthReportsScreen: React.FC = () => {
     }
 
     // Cycle length insight
-    if (averageStats.avgCycleLength >= 21 && averageStats.avgCycleLength <= 35) {
+    if (calculatedStats.avgCycleLength >= 21 && calculatedStats.avgCycleLength <= 35) {
       insights.push({
         type: 'positive',
         title: 'Normal Cycle Length',
-        description: `Your average cycle length of ${averageStats.avgCycleLength} days is within the healthy range.`
+        description: `Your average cycle length of ${calculatedStats.avgCycleLength} days is within the healthy range.`
       });
     } else {
       insights.push({
@@ -152,7 +152,7 @@ const HealthReportsScreen: React.FC = () => {
     }
 
     return insights;
-  };
+  }, [sortedCycles.length, calculatedStats]);
 
   const chartConfig = {
     cycleLength: {
