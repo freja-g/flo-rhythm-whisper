@@ -30,12 +30,17 @@ const HealthReportsScreen: React.FC = () => {
     cycleVariability: 0
   });
 
-  const sortedCycles = cycles
-    .filter(cycle => cycle.userId === user?.id)
-    .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+  const sortedCycles = useMemo(() =>
+    cycles
+      .filter(cycle => cycle.userId === user?.id)
+      .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()),
+    [cycles, user?.id]
+  );
 
-  const calculateTrends = useCallback(() => {
-    const trends = sortedCycles.map((cycle, index) => {
+  const calculatedTrends = useMemo(() => {
+    if (sortedCycles.length < 5) return [];
+
+    return sortedCycles.map((cycle, index) => {
       const cycleNumber = index + 1;
       let actualCycleLength = cycle.length;
 
@@ -53,12 +58,16 @@ const HealthReportsScreen: React.FC = () => {
         month: new Date(cycle.startDate).toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
       };
     });
-
-    setTrendData(trends);
   }, [sortedCycles]);
 
-  const calculateStats = useCallback(() => {
-    if (sortedCycles.length < 2) return;
+  const calculatedStats = useMemo(() => {
+    if (sortedCycles.length < 2) {
+      return {
+        avgCycleLength: 0,
+        avgPeriodLength: 0,
+        cycleVariability: 0
+      };
+    }
 
     // Calculate cycle lengths between consecutive cycles
     const cycleLengths: number[] = [];
@@ -74,19 +83,17 @@ const HealthReportsScreen: React.FC = () => {
     const variance = cycleLengths.reduce((sum, length) => sum + Math.pow(length - avgCycleLength, 2), 0) / cycleLengths.length;
     const cycleVariability = Math.sqrt(variance);
 
-    setAverageStats({
+    return {
       avgCycleLength: Math.round(avgCycleLength * 10) / 10,
       avgPeriodLength: Math.round(avgPeriodLength * 10) / 10,
       cycleVariability: Math.round(cycleVariability * 10) / 10
-    });
+    };
   }, [sortedCycles]);
 
   useEffect(() => {
-    if (sortedCycles.length >= 5) {
-      calculateTrends();
-      calculateStats();
-    }
-  }, [calculateTrends, calculateStats, sortedCycles.length]);
+    setTrendData(calculatedTrends);
+    setAverageStats(calculatedStats);
+  }, [calculatedTrends, calculatedStats]);
 
   // SEO: title and meta description
   useEffect(() => {
