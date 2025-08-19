@@ -758,6 +758,14 @@ const HealthReportsScreen: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* WebView Modal for Contact Specialist */}
+      <WebViewModal
+        isOpen={isWebViewOpen}
+        onClose={() => setIsWebViewOpen(false)}
+        url="https://my1health.com/search/providers/conditions/menstrual-irregularities/kenya"
+        title="Contact a Specialist"
+      />
     </div>
   );
 };
