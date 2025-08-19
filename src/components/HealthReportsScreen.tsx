@@ -369,7 +369,7 @@ const HealthReportsScreen: React.FC = () => {
           <div className="overflow-x-auto">
             <ChartContainer config={chartConfig} className="h-56 sm:h-64 md:h-72 min-w-[300px]">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={trendData} margin={{ top: 5, right: 15, left: 5, bottom: 65 }}>
+                <LineChart data={calculatedTrends} margin={{ top: 5, right: 15, left: 5, bottom: 65 }}>
                   <defs>
                     <linearGradient id="purpleGradient" x1="0" y1="0" x2="1" y2="0">
                       <stop offset="0%" stopColor="#8b5cf6" />
@@ -420,7 +420,7 @@ const HealthReportsScreen: React.FC = () => {
           <div className="overflow-x-auto">
             <ChartContainer config={chartConfig} className="h-56 sm:h-64 md:h-72 min-w-[300px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={trendData} margin={{ top: 5, right: 15, left: 5, bottom: 65 }}>
+                <BarChart data={calculatedTrends} margin={{ top: 5, right: 15, left: 5, bottom: 65 }}>
                   <defs>
                     <linearGradient id="pinkGradient" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="#ec4899" />
