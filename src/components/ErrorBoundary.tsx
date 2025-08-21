@@ -49,7 +49,7 @@ export class ErrorBoundary extends Component<Props, State> {
             >
               Refresh App
             </button>
-            {__DEV__ && this.state.error && (
+            {import.meta.env.DEV && this.state.error && (
               <details className="mt-4 text-left">
                 <summary className="text-sm text-gray-500 cursor-pointer">
                   Technical Details (Development)
