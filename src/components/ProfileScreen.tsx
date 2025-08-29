@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { Profile } from '../types';
+import { DataHealthCheck } from './DataHealthCheck';
 
 const ProfileScreen: React.FC = () => {
   const { setCurrentScreen } = useApp();
@@ -25,6 +26,7 @@ const ProfileScreen: React.FC = () => {
   const [showHealthReports, setShowHealthReports] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showNotificationsModal, setShowNotificationsModal] = useState(false);
+  const [showDataHealthCheck, setShowDataHealthCheck] = useState(false);
   
   const {
     notificationsEnabled,
@@ -246,10 +248,15 @@ const ProfileScreen: React.FC = () => {
     setShowNotificationsModal(true);
   };
 
+  const handleDataHealthCheck = () => {
+    setShowDataHealthCheck(true);
+  };
+
   const profileOptions = [
     { title: 'My Goals', icon: '🎯', color: 'text-blue-600', action: handleMyGoals },
     { title: 'Notifications', icon: '🔔', color: 'text-purple-600', action: handleNotifications },
     { title: 'Health Reports', icon: '📊', color: 'text-purple-600', action: handleHealthReports },
+    { title: 'Data Health Check', icon: '🔍', color: 'text-green-600', action: handleDataHealthCheck },
     { title: 'Terms & Conditions', icon: '📄', color: 'text-gray-600', action: handleTermsAndConditions },
     { title: 'Sign Out', icon: '🚪', color: 'text-orange-600', action: handleSignOut },
     { title: 'Delete Profile', icon: '🗑️', color: 'text-red-600', action: handleDeleteProfile }
@@ -552,6 +559,11 @@ const ProfileScreen: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Data Health Check Modal */}
+      {showDataHealthCheck && (
+        <DataHealthCheck onClose={() => setShowDataHealthCheck(false)} />
       )}
 
       {/* Delete Account Confirmation Dialog */}
