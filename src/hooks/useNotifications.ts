@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { MobileNotificationService } from '../services/mobileNotificationService';
+import { NotificationService } from '../services/notificationService';
 import { useAuth } from '../context/AuthContext';
 import { Profile } from '../types';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,7 +11,7 @@ export const useNotifications = (profile: Profile | null) => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [popupData, setPopupData] = useState({ title: '', message: '' });
-  const notificationService = MobileNotificationService.getInstance();
+  const notificationService = NotificationService.getInstance();
 
   useEffect(() => {
     // Check current permission status
