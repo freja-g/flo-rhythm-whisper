@@ -26,12 +26,6 @@ const GoalsScreen: React.FC = () => {
     description: ''
   });
 
-  useEffect(() => {
-    if (user) {
-      fetchGoals();
-    }
-  }, [user, fetchGoals]);
-
   const fetchGoals = useCallback(async () => {
     try {
       setLoading(true);
@@ -54,6 +48,13 @@ const GoalsScreen: React.FC = () => {
       setLoading(false);
     }
   }, [user?.id, toast]);
+
+  useEffect(() => {
+    if (user) {
+      fetchGoals();
+    }
+  }, [user, fetchGoals]);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

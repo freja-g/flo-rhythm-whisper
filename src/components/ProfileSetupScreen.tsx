@@ -58,6 +58,7 @@ const ProfileSetupScreen: React.FC = () => {
         .from('profiles')
         .upsert({
           id: user.id,
+          email: user.email || '',
           name: formData.name,
           profile_photo: formData.profilePhoto,
           period_length: formData.periodLength,

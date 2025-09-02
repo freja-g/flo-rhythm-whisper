@@ -38,11 +38,11 @@ const SignUpScreen: React.FC = () => {
         const { data, error } = await signUp(formData.email, formData.password, formData.name);
         if (error) {
           console.error('Sign up error:', error);
-          setError(typeof error === 'string' ? error : error.message || 'Sign up failed');
-        } else if (data?.session) {
+          setError(typeof error === 'string' ? error : (error as any)?.message || 'Sign up failed');
+        } else if ((data as any)?.session) {
           // User is automatically logged in (email confirmation disabled)
           setCurrentScreen('profileSetup');
-        } else if (data?.user && !data?.session) {
+        } else if ((data as any)?.user && !(data as any)?.session) {
           // Email confirmation required
           setError('Please check your email to confirm your account, then sign in.');
           setIsSignUp(false); // Switch to sign in mode
@@ -54,7 +54,7 @@ const SignUpScreen: React.FC = () => {
         const { error } = await signIn(formData.email, formData.password);
         if (error) {
           console.error('Sign in error:', error);
-          setError(typeof error === 'string' ? error : error.message || 'Sign in failed');
+          setError(typeof error === 'string' ? error : (error as any)?.message || 'Sign in failed');
         } else {
           // Navigate to dashboard - it will handle profile setup redirect if needed
           setCurrentScreen('dashboard');

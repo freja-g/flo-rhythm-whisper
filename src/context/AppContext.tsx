@@ -73,7 +73,8 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
             startDate: cycle.start_date,
             length: cycle.cycle_length,
             periodLength: cycle.period_length,
-            userId: cycle.user_id
+            userId: cycle.user_id,
+            createdAt: cycle.created_at || new Date().toISOString()
           }));
           setCycles(formattedCycles);
         }
@@ -91,9 +92,10 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
             date: symptom.date,
             symptoms: symptom.symptoms || [],
             mood: symptom.mood || '',
-            menstrualFlow: symptom.menstrual_flow || '',
-            spotting: symptom.spotting || '',
-            userId: symptom.user_id
+            menstrualFlow: (symptom.menstrual_flow as 'light' | 'medium' | 'heavy' | 'none') || 'none',
+            spotting: (symptom.spotting as 'none' | 'light' | 'heavy') || 'none',
+            userId: symptom.user_id,
+            createdAt: symptom.created_at || new Date().toISOString()
           }));
           setSymptoms(formattedSymptoms);
         }
