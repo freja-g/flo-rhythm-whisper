@@ -112,9 +112,14 @@ const DashboardScreen: React.FC = () => {
     </div>
   );
 
+  useEffect(() => {
+    if (!loading && !profile && user) {
+      // If no profile found after loading, redirect to profile setup
+      setCurrentScreen('profileSetup');
+    }
+  }, [loading, profile, user, setCurrentScreen]);
+
   if (!profile) {
-    // If no profile found, redirect to profile setup
-    setCurrentScreen('profileSetup');
     return (
       <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50 flex items-center justify-center">
         <div className="text-center">
