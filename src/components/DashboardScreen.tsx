@@ -218,13 +218,24 @@ const DashboardScreen: React.FC = () => {
 
         {/* Period Prediction */}
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 text-center">
-          <div className="text-3xl mb-2">🌸</div>
+          <div className="text-3xl mb-2">{daysUntilPeriod === 0 ? '🩸' : '🌸'}</div>
           <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-1">
             Period Prediction
           </h3>
-          <p className="text-sm sm:text-base text-gray-600">
-            Your period starts in <span className="font-bold text-purple-600">{daysUntilPeriod} days</span>
-          </p>
+          {daysUntilPeriod === 0 ? (
+            <div>
+              <p className="text-sm sm:text-base text-red-600 font-bold mb-2">
+                Today is your period start!
+              </p>
+              <p className="text-xs sm:text-sm text-gray-600">
+                💊 Take pain relief early • 🍫 Stay hydrated • 🛁 Use heat pads for comfort
+              </p>
+            </div>
+          ) : (
+            <p className="text-sm sm:text-base text-gray-600">
+              Your period starts in <span className="font-bold text-purple-600">{daysUntilPeriod} days</span>
+            </p>
+          )}
         </div>
       </div>
 
