@@ -316,6 +316,50 @@ const ProfileScreen: React.FC = () => {
             <p className="text-gray-600">{profile.email}</p>
           </div>
 
+          {/* Period Prediction Section */}
+          <div className="mb-6 p-4 bg-gradient-to-r from-pink-50 to-purple-50 rounded-xl border border-pink-100">
+            {(() => {
+              if (!profile.last_period_date || !profile.cycle_length) {
+                return (
+                  <div className="text-center">
+                    <div className="text-2xl mb-2">📅</div>
+                    <p className="text-sm text-gray-600">Complete your cycle info to see predictions</p>
+                  </div>
+                );
+              }
+              
+              const today = new Date();
+              const lastPeriodDate = new Date(profile.last_period_date);
+              const cycleLength = profile.cycle_length;
+              const nextPeriodDate = new Date(lastPeriodDate.getTime() + cycleLength * 24 * 60 * 60 * 1000);
+              const daysUntilNext = Math.ceil((nextPeriodDate.getTime() - today.getTime()) / (24 * 60 * 60 * 1000));
+              const daysUntilPeriod = daysUntilNext > 0 ? daysUntilNext : 0;
+              
+              return (
+                <div className="text-center">
+                  <div className="text-3xl mb-2">{daysUntilPeriod === 0 ? '🩸' : '🌸'}</div>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-1">
+                    Period Prediction
+                  </h3>
+                  {daysUntilPeriod === 0 ? (
+                    <div>
+                      <p className="text-base text-red-600 font-bold mb-2">
+                        Today is your period start!
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        💊 Take pain relief early • 💧 Stay hydrated • 🛁 Use heat pads for comfort
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-base text-gray-600">
+                      Your period starts in <span className="font-bold text-purple-600">{daysUntilPeriod} days</span>
+                    </p>
+                  )}
+                </div>
+              );
+            })()}
+          </div>
+
           <div className="space-y-3">
             <div className="flex justify-between py-2">
               <span className="text-gray-600">Period Length</span>
