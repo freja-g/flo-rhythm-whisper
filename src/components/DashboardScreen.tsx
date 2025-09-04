@@ -103,6 +103,13 @@ const DashboardScreen: React.FC = () => {
     return () => window.removeEventListener('profile-updated', handleProfileUpdate);
   }, [user, fetchProfile]);
 
+  useEffect(() => {
+    if (!loading && !profile && user) {
+      // If no profile found after loading, redirect to profile setup
+      setCurrentScreen('profileSetup');
+    }
+  }, [loading, profile, user, setCurrentScreen]);
+
   if (!user || loading) return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50 flex items-center justify-center">
       <div className="text-center">
@@ -111,13 +118,6 @@ const DashboardScreen: React.FC = () => {
       </div>
     </div>
   );
-
-  useEffect(() => {
-    if (!loading && !profile && user) {
-      // If no profile found after loading, redirect to profile setup
-      setCurrentScreen('profileSetup');
-    }
-  }, [loading, profile, user, setCurrentScreen]);
 
   if (!profile) {
     return (
