@@ -38,26 +38,8 @@ const ChatScreen: React.FC = () => {
     setIsLoading(true);
 
     try {
-      let responseMessage: string;
-      
-      if (isOnline) {
-        try {
-          const { data, error } = await supabase.functions.invoke('chat-completion', {
-            body: { 
-              message: inputMessage, 
-              conversationHistory: chatMessages 
-            }
-          });
-
-          if (error) throw error;
-          responseMessage = data.response;
-        } catch (error) {
-          console.error('Edge Function failed, using fallback:', error);
-          responseMessage = openAIService.getFallbackResponse(inputMessage);
-        }
-      } else {
-        responseMessage = openAIService.getFallbackResponse(inputMessage);
-      }
+      // Use reliable fallback responses for menstrual health support
+      const responseMessage = openAIService.getFallbackResponse(inputMessage);
 
       const aiResponse: ChatMessage = {
         id: (Date.now() + 1).toString(),
