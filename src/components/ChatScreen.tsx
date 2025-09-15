@@ -42,6 +42,7 @@ const ChatScreen: React.FC = () => {
       
       if (isOnline) {
         try {
+          console.log('Calling edge function with message:', inputMessage);
           const { data, error } = await supabase.functions.invoke('chat-completion', {
             body: { 
               message: inputMessage, 
@@ -54,13 +55,21 @@ const ChatScreen: React.FC = () => {
             throw error;
           }
           
-          responseMessage = data.response;
+          if (data && data.response) {
+            responseMessage = data.response;
+            console.log('Got OpenAI response:', responseMessage);
+          } else {
+            throw new Error('No response from edge function');
+          }
         } catch (error) {
           console.error('OpenAI API failed, using fallback:', error);
           responseMessage = openAIService.getFallbackResponse(inputMessage);
+          console.log('Using fallback response:', responseMessage);
         }
       } else {
+        console.log('Offline - using fallback response');
         responseMessage = openAIService.getFallbackResponse(inputMessage);
+        console.log('Fallback response:', responseMessage);
       }
 
       const aiResponse: ChatMessage = {
