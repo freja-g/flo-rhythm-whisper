@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { Profile } from '../types';
-import { DataHealthCheck } from './DataHealthCheck';
+
 import { PeriodPrediction } from './PeriodPrediction';
 
 const ProfileScreen: React.FC = () => {
@@ -27,7 +27,7 @@ const ProfileScreen: React.FC = () => {
   const [showHealthReports, setShowHealthReports] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showNotificationsModal, setShowNotificationsModal] = useState(false);
-  const [showDataHealthCheck, setShowDataHealthCheck] = useState(false);
+  
   
   const {
     notificationsEnabled,
@@ -224,12 +224,12 @@ const ProfileScreen: React.FC = () => {
   };
 
   const handleMyGoals = () => {
-    setShowGoalsModal(true);
+    setCurrentScreen('goals');
   };
 
 
   const handleHealthReports = () => {
-    setShowHealthReports(true);
+    setCurrentScreen('healthReports');
   };
 
   const handleTermsAndConditions = () => {
@@ -246,19 +246,29 @@ const ProfileScreen: React.FC = () => {
     }
   };
 
-  const handleNotifications = () => {
-    setShowNotificationsModal(true);
+  const handleNotifications = async () => {
+    try {
+      if (!notificationsEnabled) {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+          await enableNotifications();
+        } else {
+          alert('Please enable notifications in your browser settings to receive period reminders.');
+        }
+      } else {
+        setShowNotificationsModal(true);
+      }
+    } catch (error) {
+      console.error('Error requesting notification permission:', error);
+      setShowNotificationsModal(true);
+    }
   };
 
-  const handleDataHealthCheck = () => {
-    setShowDataHealthCheck(true);
-  };
 
   const profileOptions = [
     { title: 'My Goals', icon: '🎯', color: 'text-blue-600', action: handleMyGoals },
     { title: 'Notifications', icon: '🔔', color: 'text-purple-600', action: handleNotifications },
     { title: 'Health Reports', icon: '📊', color: 'text-purple-600', action: handleHealthReports },
-    { title: 'Data Health Check', icon: '🔍', color: 'text-green-600', action: handleDataHealthCheck },
     { title: 'Terms & Conditions', icon: '📄', color: 'text-gray-600', action: handleTermsAndConditions },
     { title: 'Sign Out', icon: '🚪', color: 'text-orange-600', action: handleSignOut },
     { title: 'Delete Profile', icon: '🗑️', color: 'text-red-600', action: handleDeleteProfile }
@@ -367,66 +377,6 @@ const ProfileScreen: React.FC = () => {
           <p>Your personal menstrual health companion</p>
         </div>
       </div>
-
-      {/* Goals Modal */}
-      {showGoalsModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full">
-            <h3 className="text-xl font-bold mb-4">My Goals</h3>
-            <div className="space-y-3">
-              <div className="p-3 bg-pink-50 rounded-lg">
-                <h4 className="font-medium text-pink-800">Track Cycle Regularly</h4>
-                <p className="text-sm text-pink-600">Log symptoms and moods daily</p>
-              </div>
-              <div className="p-3 bg-blue-50 rounded-lg">
-                <h4 className="font-medium text-blue-800">Understand Patterns</h4>
-                <p className="text-sm text-blue-600">Identify cycle patterns and symptoms</p>
-              </div>
-              <div className="p-3 bg-green-50 rounded-lg">
-                <h4 className="font-medium text-green-800">Improve Wellness</h4>
-                <p className="text-sm text-green-600">Use insights for better health</p>
-              </div>
-            </div>
-            <button
-              onClick={() => setShowGoalsModal(false)}
-              className="mt-4 w-full bg-pink-500 text-white py-2 rounded-lg hover:bg-pink-600 transition-colors"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Health Reports Modal */}
-      {showHealthReports && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full">
-            <h3 className="text-xl font-bold mb-4">Health Reports</h3>
-            <div className="space-y-4">
-              <div className="text-center py-8">
-                <span className="text-6xl">📊</span>
-                <h4 className="text-lg font-medium mt-4">No Reports Yet</h4>
-                <p className="text-gray-600 text-sm">Keep tracking your cycle to generate personalized health reports</p>
-              </div>
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h5 className="font-medium mb-2">Available Reports:</h5>
-                <ul className="text-sm text-gray-600 space-y-1">
-                  <li>• Cycle Pattern Analysis</li>
-                  <li>• Symptom Trends</li>
-                  <li>• Mood Tracking Summary</li>
-                  <li>• Health Insights</li>
-                </ul>
-              </div>
-            </div>
-            <button
-              onClick={() => setShowHealthReports(false)}
-              className="mt-4 w-full bg-purple-500 text-white py-2 rounded-lg hover:bg-purple-600 transition-colors"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Terms Modal */}
       {showTermsModal && (
@@ -568,10 +518,6 @@ const ProfileScreen: React.FC = () => {
         </div>
       )}
 
-      {/* Data Health Check Modal */}
-      {showDataHealthCheck && (
-        <DataHealthCheck onClose={() => setShowDataHealthCheck(false)} />
-      )}
 
       {/* Delete Account Confirmation Dialog */}
       {showDeleteDialog && (
