@@ -267,12 +267,28 @@ const ProfileScreen: React.FC = () => {
 
   const profileOptions = [
     { title: 'My Goals', icon: '🎯', color: 'text-blue-600', action: handleMyGoals },
-    { title: 'Notifications', icon: '🔔', color: 'text-purple-600', action: handleNotifications },
     { title: 'Health Reports', icon: '📊', color: 'text-purple-600', action: handleHealthReports },
     { title: 'Terms & Conditions', icon: '📄', color: 'text-gray-600', action: handleTermsAndConditions },
     { title: 'Sign Out', icon: '🚪', color: 'text-orange-600', action: handleSignOut },
     { title: 'Delete Profile', icon: '🗑️', color: 'text-red-600', action: handleDeleteProfile }
   ];
+
+  const handleNotificationToggle = async (checked: boolean) => {
+    try {
+      if (checked) {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+          await enableNotifications();
+        } else {
+          alert('Please enable notifications in your browser settings to receive period reminders.');
+        }
+      } else {
+        disableNotifications();
+      }
+    } catch (error) {
+      console.error('Error handling notification toggle:', error);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50">
@@ -369,6 +385,23 @@ const ProfileScreen: React.FC = () => {
               <span className="text-gray-400">→</span>
             </button>
           ))}
+          
+          {/* Notifications Toggle */}
+          <div className="p-4 flex items-center space-x-4 border-b border-gray-100">
+            <span className="text-xl text-purple-600">🔔</span>
+            <span className="flex-1 text-left font-medium text-gray-800">
+              Notifications
+            </span>
+            <div className="flex items-center space-x-2">
+              <span className="text-xs text-gray-500">
+                {notificationsEnabled ? 'On' : 'Off'}
+              </span>
+              <Switch
+                checked={notificationsEnabled}
+                onCheckedChange={handleNotificationToggle}
+              />
+            </div>
+          </div>
         </div>
 
         {/* App Info */}
