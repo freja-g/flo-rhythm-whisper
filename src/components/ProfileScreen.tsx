@@ -276,17 +276,24 @@ const ProfileScreen: React.FC = () => {
   const handleNotificationToggle = async (checked: boolean) => {
     try {
       if (checked) {
-        const permission = await Notification.requestPermission();
-        if (permission === 'granted') {
-          await enableNotifications();
-        } else {
-          alert('Please enable notifications in your browser settings to receive period reminders.');
+        // Check if notifications are supported
+        if (!('Notification' in window)) {
+          alert('This browser does not support notifications.');
+          return;
+        }
+
+        // Request permission and enable notifications
+        const success = await enableNotifications(5); // 5 days before period
+        if (!success) {
+          // Permission was denied, show instructions
+          alert('To receive period reminders, please:\n1. Click the notification icon in your browser\n2. Allow notifications for this site\n3. Try enabling notifications again');
         }
       } else {
         disableNotifications();
       }
     } catch (error) {
       console.error('Error handling notification toggle:', error);
+      alert('Failed to toggle notifications. Please try again.');
     }
   };
 
@@ -387,19 +394,26 @@ const ProfileScreen: React.FC = () => {
           ))}
           
           {/* Notifications Toggle */}
-          <div className="p-4 flex items-center space-x-4 border-b border-gray-100">
-            <span className="text-xl text-purple-600">🔔</span>
-            <span className="flex-1 text-left font-medium text-gray-800">
-              Notifications
-            </span>
-            <div className="flex items-center space-x-2">
-              <span className="text-xs text-gray-500">
-                {notificationsEnabled ? 'On' : 'Off'}
-              </span>
-              <Switch
-                checked={notificationsEnabled}
-                onCheckedChange={handleNotificationToggle}
-              />
+          <div className="p-4 border-b border-gray-100">
+            <div className="flex items-center space-x-4">
+              <span className="text-xl text-purple-600">🔔</span>
+              <div className="flex-1">
+                <div className="font-medium text-gray-800">
+                  Period Reminders
+                </div>
+                <div className="text-xs text-gray-500 mt-1">
+                  Get notified 5 days before your expected period
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <span className="text-xs text-gray-500">
+                  {notificationsEnabled ? 'On' : 'Off'}
+                </span>
+                <Switch
+                  checked={notificationsEnabled}
+                  onCheckedChange={handleNotificationToggle}
+                />
+              </div>
             </div>
           </div>
         </div>
